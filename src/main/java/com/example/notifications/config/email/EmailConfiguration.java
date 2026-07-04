@@ -1,44 +1,41 @@
 package com.example.notifications.config.email;
 
+import com.example.notifications.config.NotificationContext;
 import com.example.notifications.provider.email.EmailProvider;
 
 import java.time.Duration;
-import java.util.Objects;
 
 public final class EmailConfiguration {
 
-    private final EmailProvider provider;
+    private final NotificationContext<EmailProvider> context;
 
     private final String defaultFrom;
 
-    private final Duration timeout;
-
     private EmailConfiguration(Builder builder) {
 
-        this.provider = Objects.requireNonNull(
+        this.context = new NotificationContext<>(
                 builder.provider,
-                "Email provider is required");
+                builder.timeout);
 
         this.defaultFrom = builder.defaultFrom;
-        this.timeout = builder.timeout;
 
     }
 
     public EmailProvider getProvider() {
 
-        return provider;
+        return context.getProvider();
+
+    }
+
+    public Duration getTimeout() {
+
+        return context.getTimeout();
 
     }
 
     public String getDefaultFrom() {
 
         return defaultFrom;
-
-    }
-
-    public Duration getTimeout() {
-
-        return timeout;
 
     }
 
@@ -52,9 +49,10 @@ public final class EmailConfiguration {
 
         private EmailProvider provider;
 
-        private String defaultFrom;
+        private Duration timeout =
+                Duration.ofSeconds(30);
 
-        private Duration timeout = Duration.ofSeconds(30);
+        private String defaultFrom;
 
         public Builder provider(
                 EmailProvider provider) {
@@ -65,19 +63,19 @@ public final class EmailConfiguration {
 
         }
 
-        public Builder defaultFrom(
-                String defaultFrom) {
+        public Builder timeout(
+                Duration timeout) {
 
-            this.defaultFrom = defaultFrom;
+            this.timeout = timeout;
 
             return this;
 
         }
 
-        public Builder timeout(
-                Duration timeout) {
+        public Builder defaultFrom(
+                String defaultFrom) {
 
-            this.timeout = timeout;
+            this.defaultFrom = defaultFrom;
 
             return this;
 

@@ -1,11 +1,70 @@
 package com.example.notifications.config.email;
 
-public final class SendGridConfiguration
-        extends EmailProviderConfiguration {
+import com.example.notifications.config.ProviderConfiguration;
 
-    public SendGridConfiguration(String apiKey) {
+import java.time.Duration;
 
-        super(apiKey);
+public final class SendGridConfiguration extends ProviderConfiguration {
+
+    private final String apiKey;
+
+    private final Duration timeout;
+
+    private SendGridConfiguration(Builder builder) {
+
+        super("SendGrid");
+
+        this.apiKey = builder.apiKey;
+
+        this.timeout = builder.timeout;
+
+    }
+
+    public String getApiKey() {
+
+        return apiKey;
+
+    }
+
+    public Duration getTimeout() {
+
+        return timeout;
+
+    }
+
+    public static Builder builder() {
+
+        return new Builder();
+
+    }
+
+    public static final class Builder {
+
+        private String apiKey;
+
+        private Duration timeout = Duration.ofSeconds(30);
+
+        public Builder apiKey(String apiKey) {
+
+            this.apiKey = apiKey;
+
+            return this;
+
+        }
+
+        public Builder timeout(Duration timeout) {
+
+            this.timeout = timeout;
+
+            return this;
+
+        }
+
+        public SendGridConfiguration build() {
+
+            return new SendGridConfiguration(this);
+
+        }
 
     }
 

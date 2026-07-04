@@ -3,17 +3,13 @@ package com.example.notifications.provider;
 import com.example.notifications.model.NotificationResult;
 import com.example.notifications.model.NotificationStatus;
 import com.example.notifications.model.email.EmailNotification;
-import com.example.notifications.provider.email.AbstractEmailProvider;
+import com.example.notifications.provider.email.EmailProvider;
 
 import java.time.Duration;
 import java.time.Instant;
 
 public final class FailingEmailProvider
-        extends AbstractEmailProvider {
-
-    public FailingEmailProvider() {
-        super("FailingProvider");
-    }
+        implements EmailProvider {
 
     @Override
     public NotificationResult send(
@@ -28,6 +24,13 @@ public final class FailingEmailProvider
                 Duration.ZERO,
                 Instant.now()
         );
+
+    }
+
+    @Override
+    public String getProviderName() {
+
+        return "FailingProvider";
 
     }
 

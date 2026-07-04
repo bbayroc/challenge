@@ -1,29 +1,21 @@
 package com.example.notifications.model.sms;
 
-import com.example.notifications.model.Notification;
-import com.example.notifications.model.NotificationChannel;
-import com.example.notifications.model.NotificationPriority;
+import com.example.notifications.model.*;
+import com.example.notifications.template.NotificationTemplate;
 
-import java.util.Map;
-
-public final class SmsNotification extends Notification {
-
+public final class SmsNotification implements Notification {
     private final String phoneNumber;
     private final String message;
+    private final NotificationTemplate template;
 
-    public SmsNotification(
-            String phoneNumber,
-            String message,
-            NotificationPriority priority,
-            Map<String, String> metadata) {
+    private SmsNotification(Builder b) {
+        this.phoneNumber = b.phoneNumber;
+        this.message = b.message;
+        this.template = b.template;
+    }
 
-        super(
-                NotificationChannel.SMS,
-                priority,
-                metadata);
-
-        this.phoneNumber = phoneNumber;
-        this.message = message;
+    public static Builder builder() {
+        return new Builder();
     }
 
     public String getPhoneNumber() {
@@ -34,4 +26,37 @@ public final class SmsNotification extends Notification {
         return message;
     }
 
+    public NotificationTemplate getTemplate() {
+        return template;
+    }
+
+    @Override
+    public NotificationChannel getChannel() {
+        return NotificationChannel.SMS;
+    }
+
+    public static final class Builder {
+        private String phoneNumber;
+        private String message;
+        private NotificationTemplate template;
+
+        public Builder phoneNumber(String v) {
+            this.phoneNumber = v;
+            return this;
+        }
+
+        public Builder message(String v) {
+            this.message = v;
+            return this;
+        }
+
+        public Builder template(NotificationTemplate v) {
+            this.template = v;
+            return this;
+        }
+
+        public SmsNotification build() {
+            return new SmsNotification(this);
+        }
+    }
 }
