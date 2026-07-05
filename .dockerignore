@@ -1,0 +1,6 @@
+target/*
+!target/notifications-lib-1.0.0.jar
+
+.git
+.idea
+*.iml
