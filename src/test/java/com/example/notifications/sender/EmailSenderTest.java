@@ -39,7 +39,7 @@ class EmailSenderTest {
                 result.getStatus());
 
         assertEquals(
-                "SendGridProvider",
+                "SendGrid",
                 result.getProvider());
 
         assertNotNull(

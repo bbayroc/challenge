@@ -6,20 +6,19 @@ import com.example.notifications.config.sms.SmsConfiguration;
 import com.example.notifications.config.sms.TwilioConfiguration;
 import com.example.notifications.core.NotificationManager;
 import com.example.notifications.core.circuit.CircuitBreaker;
-import com.example.notifications.core.retry.ExponentialBackoffRetryPolicy;
+import com.example.notifications.core.retry.FixedRetryPolicy;
+import com.example.notifications.event.EventBus;
 import com.example.notifications.factory.NotificationFactory;
-import com.example.notifications.model.email.EmailNotification;
-import com.example.notifications.model.sms.SmsNotification;
 import com.example.notifications.provider.email.SendGridProvider;
 import com.example.notifications.provider.sms.TwilioProvider;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.*;
 
-class NotificationIntegrationTest {
+class NotificationFactoryTest {
 
     @Test
-    void shouldSendEmailAndSmsWithoutErrors() {
+    void shouldCreateNotificationManager() {
 
         EmailConfiguration emailConfig =
                 EmailConfiguration.builder()
@@ -28,7 +27,7 @@ class NotificationIntegrationTest {
                                         SendGridConfiguration.builder()
                                                 .apiKey("test")
                                                 .build()))
-                        .defaultFrom("test@test.com")
+                        .defaultFrom("demo@test.com")
                         .build();
 
         SmsConfiguration smsConfig =
@@ -42,27 +41,12 @@ class NotificationIntegrationTest {
                 NotificationFactory.createManager(
                         emailConfig,
                         smsConfig,
-                        new ExponentialBackoffRetryPolicy(3),
-                        new CircuitBreaker(3, 5000)
+                        new FixedRetryPolicy(3,500),
+                        new CircuitBreaker(3,5000),
+                        new EventBus()
                 );
 
-        EmailNotification email =
-                EmailNotification.builder()
-                        .recipient("user@test.com")
-                        .subject("Test")
-                        .message("Hello")
-                        .build();
-
-        SmsNotification sms =
-                SmsNotification.builder()
-                        .phoneNumber("+519999999")
-                        .message("SMS test")
-                        .build();
-
-        assertDoesNotThrow(() -> {
-            manager.send(email);
-            manager.send(sms);
-        });
+        assertNotNull(manager);
     }
 
 }

@@ -6,11 +6,12 @@ public final class CircuitBreaker {
 
     private final long resetTimeoutMillis;
 
-    private int failureCount;
+    private volatile int failureCount;
 
-    private CircuitState state = CircuitState.CLOSED;
+    private volatile CircuitState state =
+            CircuitState.CLOSED;
 
-    private long lastFailureTime;
+    private volatile long lastFailureTime;
 
     public CircuitBreaker(
             int failureThreshold,
@@ -22,7 +23,7 @@ public final class CircuitBreaker {
 
     }
 
-    public boolean allowRequest() {
+    public synchronized boolean allowRequest() {
 
         if (state == CircuitState.OPEN) {
 
@@ -43,7 +44,7 @@ public final class CircuitBreaker {
 
     }
 
-    public void recordSuccess() {
+    public synchronized void recordSuccess() {
 
         failureCount = 0;
 
@@ -51,7 +52,7 @@ public final class CircuitBreaker {
 
     }
 
-    public void recordFailure() {
+    public synchronized void recordFailure() {
 
         failureCount++;
 

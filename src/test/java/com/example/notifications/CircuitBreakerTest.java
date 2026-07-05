@@ -5,6 +5,7 @@ import com.example.notifications.config.sms.*;
 import com.example.notifications.core.NotificationManager;
 import com.example.notifications.core.circuit.CircuitBreaker;
 import com.example.notifications.core.retry.ExponentialBackoffRetryPolicy;
+import com.example.notifications.event.EventBus;
 import com.example.notifications.factory.NotificationFactory;
 import com.example.notifications.model.NotificationResult;
 import com.example.notifications.model.email.EmailNotification;
@@ -30,12 +31,15 @@ class CircuitBreakerTest {
                         .provider(new TwilioProvider(new TwilioConfiguration()))
                         .build();
 
+        EventBus eventBus = new EventBus();
+
         NotificationManager manager =
                 NotificationFactory.createManager(
                         emailConfig,
                         smsConfig,
-                        new ExponentialBackoffRetryPolicy(1),
-                        new CircuitBreaker(1, 1000)
+                        new ExponentialBackoffRetryPolicy(3),
+                        new CircuitBreaker(3, 5000),
+                        eventBus
                 );
 
         EmailNotification email =
@@ -45,17 +49,25 @@ class CircuitBreakerTest {
                         .message("fail")
                         .build();
 
-        // 1st call → failure recorded
+// First failure
         NotificationResult r1 = manager.send(email);
         assertEquals("FAILED", r1.getStatus().name());
 
-        // 2nd call → circuit must block
-        Exception ex = assertThrows(
+// Second failure
+        NotificationResult r2 = manager.send(email);
+        assertEquals("FAILED", r2.getStatus().name());
+
+// Third failure (this opens the circuit)
+        NotificationResult r3 = manager.send(email);
+        assertEquals("FAILED", r3.getStatus().name());
+
+// Fourth request must be rejected
+        IllegalStateException ex = assertThrows(
                 IllegalStateException.class,
                 () -> manager.send(email)
         );
 
-        assertTrue(ex.getMessage().contains("Circuit is OPEN"));
+        assertEquals("Circuit is OPEN", ex.getMessage());
     }
 
 }

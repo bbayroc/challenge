@@ -1,7 +1,5 @@
-package com.example.notifications;
+package com.example.notifications.template;
 
-import com.example.notifications.template.NotificationTemplate;
-import com.example.notifications.template.SimpleTemplateEngine;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;

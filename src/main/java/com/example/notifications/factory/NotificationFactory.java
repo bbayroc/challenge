@@ -4,7 +4,6 @@ import com.example.notifications.config.email.EmailConfiguration;
 import com.example.notifications.config.sms.SmsConfiguration;
 import com.example.notifications.core.*;
 import com.example.notifications.core.circuit.CircuitBreaker;
-import com.example.notifications.core.execution.ExecutionContext;
 import com.example.notifications.core.retry.RetryPolicy;
 import com.example.notifications.event.EventBus;
 import com.example.notifications.provider.push.FirebasePushProvider;
@@ -13,8 +12,6 @@ import com.example.notifications.sender.EmailSender;
 import com.example.notifications.sender.SmsSender;
 import com.example.notifications.validation.EmailValidator;
 import com.example.notifications.validation.SmsValidator;
-
-import java.util.List;
 
 public final class NotificationFactory {
 
@@ -25,7 +22,8 @@ public final class NotificationFactory {
             EmailConfiguration emailConfig,
             SmsConfiguration smsConfig,
             RetryPolicy retryPolicy,
-            CircuitBreaker circuitBreaker) {
+            CircuitBreaker circuitBreaker,
+            EventBus eventBus){
 
         EmailSender emailSender =
                 new EmailSender(emailConfig, new EmailValidator());
@@ -36,26 +34,17 @@ public final class NotificationFactory {
         PushProvider pushProvider =
                 new FirebasePushProvider();
 
-        List<ChannelHandler<?>> handlers =
-                List.of(
-                        new EmailChannelHandler(emailSender),
-                        new SmsChannelHandler(smsSender),
-                        new PushChannelHandler(pushProvider)
-                );
-
-        ChannelResolver resolver =
-                new ChannelResolver(handlers);
-
-        ExecutionContext context =
-                new ExecutionContext(retryPolicy, circuitBreaker);
-
-        EventBus eventBus = new EventBus();
-
-        return new NotificationManager(
-                resolver,
-                context,
-                eventBus
-        );
+        return NotificationManager.builder()
+                .handler(
+                        new EmailChannelHandler(emailSender))
+                .handler(
+                        new SmsChannelHandler(smsSender))
+                .handler(
+                        new PushChannelHandler(pushProvider))
+                .retryPolicy(retryPolicy)
+                .circuitBreaker(circuitBreaker)
+                .eventBus(eventBus)
+                .build();
     }
 
 }

@@ -62,8 +62,17 @@ public final class SmsConfiguration {
 
         public SmsConfiguration build() {
 
-            return new SmsConfiguration(this);
+            if (provider == null) {
+                throw new IllegalStateException(
+                        "SMS provider is required");
+            }
 
+            if (timeout == null) {
+                throw new IllegalStateException(
+                        "SMS timeout is required");
+            }
+
+            return new SmsConfiguration(this);
         }
 
     }

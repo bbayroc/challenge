@@ -4,15 +4,19 @@ import com.example.notifications.config.email.EmailConfiguration;
 import com.example.notifications.config.email.SendGridConfiguration;
 import com.example.notifications.config.sms.SmsConfiguration;
 import com.example.notifications.config.sms.TwilioConfiguration;
+import com.example.notifications.core.NotificationManager;
 import com.example.notifications.core.circuit.CircuitBreaker;
 import com.example.notifications.core.retry.ExponentialBackoffRetryPolicy;
-import com.example.notifications.core.sdk.NotificationSDK;
+import com.example.notifications.event.EventBus;
+import com.example.notifications.factory.NotificationFactory;
 import com.example.notifications.model.NotificationResult;
 import com.example.notifications.model.email.EmailNotification;
 import com.example.notifications.provider.email.SendGridProvider;
 import com.example.notifications.provider.sms.TwilioProvider;
 
-public final class UnifiedExample {
+import java.util.concurrent.CompletableFuture;
+
+public final class AsyncExample {
 
     public static void main(String[] args) {
 
@@ -23,7 +27,7 @@ public final class UnifiedExample {
                                         SendGridConfiguration.builder()
                                                 .apiKey("demo")
                                                 .build()))
-                        .defaultFrom("demo@test.com")
+                        .defaultFrom("demo@example.com")
                         .build();
 
         SmsConfiguration smsConfig =
@@ -33,27 +37,29 @@ public final class UnifiedExample {
                                         new TwilioConfiguration()))
                         .build();
 
-        try (NotificationSDK sdk =
-                     NotificationSDK.builder()
-                             .email(emailConfig)
-                             .sms(smsConfig)
-                             .retryPolicy(
-                                     new ExponentialBackoffRetryPolicy(3))
-                             .circuitBreaker(
-                                     new CircuitBreaker(3,5000))
-                             .build()) {
+        try (NotificationManager manager =
+                     NotificationFactory.createManager(
+                             emailConfig,
+                             smsConfig,
+                             new ExponentialBackoffRetryPolicy(3),
+                             new CircuitBreaker(3, 5000),
+                             new EventBus())) {
 
-            NotificationResult result =
-                    sdk.send(
+            CompletableFuture<NotificationResult> future =
+                    manager.sendAsync(
                             EmailNotification.builder()
-                                    .recipient("user@test.com")
-                                    .subject("SDK")
-                                    .message("Notification SDK Example")
+                                    .recipient("john@example.com")
+                                    .subject("Async Notification")
+                                    .message("Sent using CompletableFuture")
                                     .build());
 
-            System.out.println(result.getStatus());
-            System.out.println(result.getProvider());
-            System.out.println(result.getMessageId());
+            System.out.println("Notification submitted...");
+
+            NotificationResult result = future.join();
+
+            System.out.println("Status     : " + result.getStatus());
+            System.out.println("Provider   : " + result.getProvider());
+            System.out.println("Message Id : " + result.getMessageId());
 
         }
 

@@ -1,4 +1,4 @@
-package com.example.notifications.examples;
+package com.example.notifications;
 
 import com.example.notifications.config.email.EmailConfiguration;
 import com.example.notifications.config.email.SendGridConfiguration;
@@ -11,10 +11,14 @@ import com.example.notifications.model.NotificationResult;
 import com.example.notifications.model.email.EmailNotification;
 import com.example.notifications.provider.email.SendGridProvider;
 import com.example.notifications.provider.sms.TwilioProvider;
+import org.junit.jupiter.api.Test;
 
-public final class UnifiedExample {
+import static org.junit.jupiter.api.Assertions.*;
 
-    public static void main(String[] args) {
+class NotificationSDKTest {
+
+    @Test
+    void shouldSendNotificationUsingSdk() {
 
         EmailConfiguration emailConfig =
                 EmailConfiguration.builder()
@@ -23,7 +27,7 @@ public final class UnifiedExample {
                                         SendGridConfiguration.builder()
                                                 .apiKey("demo")
                                                 .build()))
-                        .defaultFrom("demo@test.com")
+                        .defaultFrom("test@test.com")
                         .build();
 
         SmsConfiguration smsConfig =
@@ -33,27 +37,26 @@ public final class UnifiedExample {
                                         new TwilioConfiguration()))
                         .build();
 
-        try (NotificationSDK sdk =
-                     NotificationSDK.builder()
-                             .email(emailConfig)
-                             .sms(smsConfig)
-                             .retryPolicy(
-                                     new ExponentialBackoffRetryPolicy(3))
-                             .circuitBreaker(
-                                     new CircuitBreaker(3,5000))
-                             .build()) {
+        try(NotificationSDK sdk =
+                    NotificationSDK.builder()
+                            .email(emailConfig)
+                            .sms(smsConfig)
+                            .retryPolicy(
+                                    new ExponentialBackoffRetryPolicy(3))
+                            .circuitBreaker(
+                                    new CircuitBreaker(3,5000))
+                            .build()) {
 
             NotificationResult result =
                     sdk.send(
                             EmailNotification.builder()
                                     .recipient("user@test.com")
                                     .subject("SDK")
-                                    .message("Notification SDK Example")
+                                    .message("Hello")
                                     .build());
 
-            System.out.println(result.getStatus());
-            System.out.println(result.getProvider());
-            System.out.println(result.getMessageId());
+            assertNotNull(result);
+            assertNotNull(result.getStatus());
 
         }
 

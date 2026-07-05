@@ -20,6 +20,7 @@ public final class TwilioProvider
 
     public TwilioProvider(
             TwilioConfiguration configuration) {
+        super("Twilio");
 
         this.configuration = configuration;
 
@@ -30,8 +31,15 @@ public final class TwilioProvider
             SmsNotification notification){
 
         LOGGER.info(
-                "Simulating Twilio SMS delivery to {}",
-                notification.getPhoneNumber());
+                """
+                Simulating Twilio SMS delivery
+        
+                To      : {}
+                Message : {}
+                """,
+                notification.getPhoneNumber(),
+                notification.getMessage()
+        );
 
         return new NotificationResult(
                 NotificationStatus.SUCCESS,

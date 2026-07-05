@@ -2,40 +2,80 @@ package com.example.notifications.core.sdk;
 
 import com.example.notifications.config.email.EmailConfiguration;
 import com.example.notifications.config.sms.SmsConfiguration;
-import com.example.notifications.core.ChannelResolver;
+import com.example.notifications.core.EmailChannelHandler;
 import com.example.notifications.core.NotificationManager;
+import com.example.notifications.core.PushChannelHandler;
+import com.example.notifications.core.SmsChannelHandler;
 import com.example.notifications.core.circuit.CircuitBreaker;
-import com.example.notifications.core.execution.ExecutionContext;
 import com.example.notifications.core.retry.RetryPolicy;
-import com.example.notifications.factory.NotificationFactory;
+import com.example.notifications.event.EventBus;
 import com.example.notifications.model.Notification;
 import com.example.notifications.model.NotificationResult;
+import com.example.notifications.provider.push.FirebasePushProvider;
+import com.example.notifications.provider.push.PushProvider;
+import com.example.notifications.sender.EmailSender;
+import com.example.notifications.sender.SmsSender;
+import com.example.notifications.validation.EmailValidator;
+import com.example.notifications.validation.SmsValidator;
 
-public final class NotificationSDK {
+public final class NotificationSDK
+        implements AutoCloseable {
 
     private final NotificationManager manager;
 
     private NotificationSDK(Builder builder) {
 
-        this.manager =
-                NotificationFactory.createManager(
+        EmailSender emailSender =
+                new EmailSender(
                         builder.emailConfig,
+                        new EmailValidator());
+
+        SmsSender smsSender =
+                new SmsSender(
                         builder.smsConfig,
-                        builder.retryPolicy,
-                        builder.circuitBreaker
-                );
+                        new SmsValidator());
+
+        PushProvider pushProvider =
+                new FirebasePushProvider();
+
+        this.manager =
+                NotificationManager.builder()
+                        .handler(
+                                new EmailChannelHandler(
+                                        emailSender))
+                        .handler(
+                                new SmsChannelHandler(
+                                        smsSender))
+                        .handler(
+                                new PushChannelHandler(
+                                        pushProvider))
+                        .retryPolicy(
+                                builder.retryPolicy)
+                        .circuitBreaker(
+                                builder.circuitBreaker)
+                        .eventBus(
+                                builder.eventBus)
+                        .build();
 
     }
 
-    public NotificationResult send(Notification notification) {
+    public NotificationResult send(
+            Notification notification) {
 
         return manager.send(notification);
 
     }
 
-    public Builder builder() {
+    public static Builder builder() {
 
         return new Builder();
+
+    }
+
+    @Override
+    public void close() {
+
+        manager.close();
 
     }
 
@@ -53,7 +93,11 @@ public final class NotificationSDK {
 
         private CircuitBreaker circuitBreaker;
 
-        public Builder email(EmailConfiguration emailConfig) {
+        private EventBus eventBus =
+                new EventBus();
+
+        public Builder email(
+                EmailConfiguration emailConfig) {
 
             this.emailConfig = emailConfig;
 
@@ -61,7 +105,8 @@ public final class NotificationSDK {
 
         }
 
-        public Builder sms(SmsConfiguration smsConfig) {
+        public Builder sms(
+                SmsConfiguration smsConfig) {
 
             this.smsConfig = smsConfig;
 
@@ -69,7 +114,8 @@ public final class NotificationSDK {
 
         }
 
-        public Builder retryPolicy(RetryPolicy retryPolicy) {
+        public Builder retryPolicy(
+                RetryPolicy retryPolicy) {
 
             this.retryPolicy = retryPolicy;
 
@@ -77,7 +123,8 @@ public final class NotificationSDK {
 
         }
 
-        public Builder circuitBreaker(CircuitBreaker circuitBreaker) {
+        public Builder circuitBreaker(
+                CircuitBreaker circuitBreaker) {
 
             this.circuitBreaker = circuitBreaker;
 
@@ -85,18 +132,40 @@ public final class NotificationSDK {
 
         }
 
-        public NotificationSDK build() {
+        public Builder eventBus(
+                EventBus eventBus) {
 
-            if (emailConfig == null || smsConfig == null) {
+            this.eventBus = eventBus;
 
-                throw new IllegalStateException(
-                        "Email and SMS configuration are required");
-
-            }
-
-            return new NotificationSDK(this);
+            return this;
 
         }
 
+        public NotificationSDK build() {
+
+            if (emailConfig == null) {
+                throw new IllegalStateException(
+                        "Email configuration is required");
+            }
+
+            if (smsConfig == null) {
+                throw new IllegalStateException(
+                        "SMS configuration is required");
+            }
+
+            if (retryPolicy == null) {
+                throw new IllegalStateException(
+                        "RetryPolicy is required");
+            }
+
+            if (circuitBreaker == null) {
+                throw new IllegalStateException(
+                        "CircuitBreaker is required");
+            }
+
+            return new NotificationSDK(this);
+        }
+
     }
+
 }

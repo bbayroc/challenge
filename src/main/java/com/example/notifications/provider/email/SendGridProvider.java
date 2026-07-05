@@ -19,6 +19,7 @@ public final class SendGridProvider extends AbstractEmailProvider {
 
     public SendGridProvider(
             SendGridConfiguration configuration) {
+        super("SendGrid");
 
         this.configuration = configuration;
 
@@ -29,8 +30,17 @@ public final class SendGridProvider extends AbstractEmailProvider {
             EmailNotification notification) {
 
         LOGGER.info(
-                "Simulating SendGrid email delivery to {}",
-                notification.getRecipient());
+                """
+                Simulating SendGrid email delivery
+        
+                To      : {}
+                Subject : {}
+                Message : {}
+                """,
+                notification.getRecipient(),
+                notification.getSubject(),
+                notification.getMessage()
+        );
 
         return new NotificationResult(
                 NotificationStatus.SUCCESS,

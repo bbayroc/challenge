@@ -26,9 +26,13 @@ public final class EmailValidator
                 notification.getSubject(),
                 "Subject");
 
-        ValidationSupport.notBlank(
-                notification.getMessage(),
-                "Message");
+        if (notification.getTemplate() == null) {
+
+            ValidationSupport.notBlank(
+                    notification.getMessage(),
+                    "Message");
+
+        }
 
         if (!ValidationUtils.isValidEmail(
                 notification.getRecipient())) {

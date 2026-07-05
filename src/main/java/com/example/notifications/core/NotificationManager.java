@@ -1,26 +1,20 @@
 package com.example.notifications.core;
 
 import com.example.notifications.core.execution.ExecutionContext;
-import com.example.notifications.core.retry.RetryPolicy;
+import com.example.notifications.core.execution.ExecutionPipeline;
 import com.example.notifications.event.EventBus;
-import com.example.notifications.event.NotificationEvent;
-import com.example.notifications.event.NotificationEventType;
 import com.example.notifications.model.Notification;
 import com.example.notifications.model.NotificationResult;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
-public final class NotificationManager {
+public final class NotificationManager
+        implements AutoCloseable {
 
-    private final ChannelResolver resolver;
-
+    private final ExecutionPipeline pipeline;
     private final ExecutorService executor;
-
-    private final ExecutionContext executionContext;
-
     private final EventBus eventBus;
 
     public NotificationManager(
@@ -28,91 +22,40 @@ public final class NotificationManager {
             ExecutionContext executionContext,
             EventBus eventBus) {
 
-        this.resolver = resolver;
-
-        this.executionContext = executionContext;
-
         this.eventBus = eventBus;
 
-        this.executor = Executors.newFixedThreadPool(10);
+        this.pipeline =
+                new ExecutionPipeline(
+                        resolver,
+                        executionContext,
+                        eventBus);
+
+        this.executor =
+                Executors.newVirtualThreadPerTaskExecutor();
 
     }
 
-    // =========================
-    // SYNC
-    // =========================
+    public static NotificationManagerBuilder builder() {
 
-    public NotificationResult send(Notification notification) {
-
-        if (!executionContext.getCircuitBreaker().allowRequest()) {
-
-            throw new IllegalStateException("Circuit is OPEN");
-
-        }
-
-        try {
-
-            NotificationResult result =
-                    resolver.resolve(notification);
-
-            if (result.getStatus().name().equals("FAILED")) {
-
-                executionContext.getCircuitBreaker().recordFailure();
-
-                eventBus.publish(
-                        new NotificationEvent(
-                                NotificationEventType.FAILED,
-                                result,
-                                Instant.now()
-                        )
-                );
-
-            } else {
-
-                executionContext.getCircuitBreaker().recordSuccess();
-
-                eventBus.publish(
-                        new NotificationEvent(
-                                NotificationEventType.SENT,
-                                result,
-                                Instant.now()
-                        )
-                );
-
-            }
-
-            return result;
-
-        } catch (Exception ex) {
-
-            eventBus.publish(
-                    new NotificationEvent(
-                            NotificationEventType.FAILED,
-                            null,
-                            Instant.now()
-                    )
-            );
-
-            throw ex;
-
-        }
+        return new NotificationManagerBuilder();
 
     }
 
-    // =========================
-    // ASYNC
-    // =========================
+    public NotificationResult send(
+            Notification notification) {
+
+        return pipeline.execute(notification);
+
+    }
 
     public CompletableFuture<NotificationResult> sendAsync(
             Notification notification) {
 
-        return CompletableFuture.supplyAsync(() -> send(notification), executor);
+        return CompletableFuture.supplyAsync(
+                () -> send(notification),
+                executor);
 
     }
-
-    // =========================
-    // BATCH
-    // =========================
 
     public List<NotificationResult> sendBatch(
             List<Notification> notifications) {
@@ -123,7 +66,8 @@ public final class NotificationManager {
 
     }
 
-    public CompletableFuture<List<NotificationResult>> sendBatchAsync(
+    public CompletableFuture<List<NotificationResult>>
+    sendBatchAsync(
             List<Notification> notifications) {
 
         List<CompletableFuture<NotificationResult>> futures =
@@ -131,13 +75,41 @@ public final class NotificationManager {
                         .map(this::sendAsync)
                         .toList();
 
-        return CompletableFuture.allOf(
-                        futures.toArray(new CompletableFuture[0]))
+        return CompletableFuture
+                .allOf(
+                        futures.toArray(
+                                new CompletableFuture[0]))
                 .thenApply(v ->
                         futures.stream()
                                 .map(CompletableFuture::join)
-                                .toList()
-                );
+                                .toList());
+
+    }
+
+    @Override
+    public void close() {
+
+        eventBus.shutdown();
+        executor.shutdown();
+
+        try {
+
+            if (!executor.awaitTermination(
+                    5,
+                    TimeUnit.SECONDS)) {
+
+                executor.shutdownNow();
+
+            }
+
+        } catch (InterruptedException ex) {
+
+            executor.shutdownNow();
+
+            Thread.currentThread().interrupt();
+
+        }
+
     }
 
 }

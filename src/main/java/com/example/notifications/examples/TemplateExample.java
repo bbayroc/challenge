@@ -4,15 +4,20 @@ import com.example.notifications.config.email.EmailConfiguration;
 import com.example.notifications.config.email.SendGridConfiguration;
 import com.example.notifications.config.sms.SmsConfiguration;
 import com.example.notifications.config.sms.TwilioConfiguration;
+import com.example.notifications.core.NotificationManager;
 import com.example.notifications.core.circuit.CircuitBreaker;
-import com.example.notifications.core.retry.ExponentialBackoffRetryPolicy;
-import com.example.notifications.core.sdk.NotificationSDK;
+import com.example.notifications.core.retry.FixedRetryPolicy;
+import com.example.notifications.event.EventBus;
+import com.example.notifications.factory.NotificationFactory;
 import com.example.notifications.model.NotificationResult;
 import com.example.notifications.model.email.EmailNotification;
 import com.example.notifications.provider.email.SendGridProvider;
 import com.example.notifications.provider.sms.TwilioProvider;
+import com.example.notifications.template.NotificationTemplate;
 
-public final class UnifiedExample {
+import java.util.Map;
+
+public final class TemplateExample {
 
     public static void main(String[] args) {
 
@@ -23,37 +28,38 @@ public final class UnifiedExample {
                                         SendGridConfiguration.builder()
                                                 .apiKey("demo")
                                                 .build()))
-                        .defaultFrom("demo@test.com")
+                        .defaultFrom("demo@example.com")
                         .build();
 
         SmsConfiguration smsConfig =
                 SmsConfiguration.builder()
-                        .provider(
-                                new TwilioProvider(
-                                        new TwilioConfiguration()))
+                        .provider(new TwilioProvider(new TwilioConfiguration()))
                         .build();
 
-        try (NotificationSDK sdk =
-                     NotificationSDK.builder()
-                             .email(emailConfig)
-                             .sms(smsConfig)
-                             .retryPolicy(
-                                     new ExponentialBackoffRetryPolicy(3))
-                             .circuitBreaker(
-                                     new CircuitBreaker(3,5000))
-                             .build()) {
+        try (NotificationManager manager =
+                     NotificationFactory.createManager(
+                             emailConfig,
+                             smsConfig,
+                             new FixedRetryPolicy(3,500),
+                             new CircuitBreaker(3,5000),
+                             new EventBus())) {
+
+            NotificationTemplate template =
+                    new NotificationTemplate(
+                            "Hello {{name}}, your order {{order}} is ready.",
+                            Map.of(
+                                    "name","John",
+                                    "order","12345"));
 
             NotificationResult result =
-                    sdk.send(
+                    manager.send(
                             EmailNotification.builder()
-                                    .recipient("user@test.com")
-                                    .subject("SDK")
-                                    .message("Notification SDK Example")
+                                    .recipient("john@example.com")
+                                    .subject("Order")
+                                    .template(template)
                                     .build());
 
             System.out.println(result.getStatus());
-            System.out.println(result.getProvider());
-            System.out.println(result.getMessageId());
 
         }
 

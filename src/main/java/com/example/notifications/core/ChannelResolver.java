@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 
 public final class ChannelResolver {
 
-    private final Map<NotificationChannel, ChannelHandler<?>> registry;
+    private final Map<NotificationChannel, ChannelHandler<? extends Notification>> registry;
 
     public ChannelResolver(
-            List<ChannelHandler<?>> handlers) {
+            List<ChannelHandler<? extends Notification>> handlers) {
 
         this.registry = handlers.stream()
                 .collect(Collectors.toMap(
@@ -37,7 +37,7 @@ public final class ChannelResolver {
                             notification.getChannel());
         }
 
-        return handler.send(notification);
+        return (NotificationResult) handler.send(notification);
 
     }
 

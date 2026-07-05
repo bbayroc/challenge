@@ -20,6 +20,7 @@ public final class MailgunProvider extends AbstractEmailProvider {
 
     public MailgunProvider(
             MailgunConfiguration configuration) {
+        super("Mailgun");
 
         this.configuration = configuration;
 

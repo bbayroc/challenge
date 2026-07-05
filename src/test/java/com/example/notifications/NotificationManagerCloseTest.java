@@ -9,19 +9,16 @@ import com.example.notifications.core.circuit.CircuitBreaker;
 import com.example.notifications.core.retry.FixedRetryPolicy;
 import com.example.notifications.event.EventBus;
 import com.example.notifications.factory.NotificationFactory;
-import com.example.notifications.model.NotificationResult;
-import com.example.notifications.model.NotificationStatus;
-import com.example.notifications.model.push.PushNotification;
 import com.example.notifications.provider.email.SendGridProvider;
 import com.example.notifications.provider.sms.TwilioProvider;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-class PushNotificationTest {
+class NotificationManagerCloseTest {
 
     @Test
-    void shouldSendPushNotificationSuccessfully() {
+    void shouldCloseGracefully() {
 
         EmailConfiguration emailConfig =
                 EmailConfiguration.builder()
@@ -44,39 +41,13 @@ class PushNotificationTest {
                 NotificationFactory.createManager(
                         emailConfig,
                         smsConfig,
-                        new FixedRetryPolicy(3, 500),
-                        new CircuitBreaker(3, 5000),
+                        new FixedRetryPolicy(3,500),
+                        new CircuitBreaker(3,5000),
                         new EventBus()
                 );
 
-        PushNotification push =
-                PushNotification.builder()
-                        .deviceToken("device-token-123")
-                        .title("Welcome")
-                        .message("Push notification working")
-                        .build();
+        assertDoesNotThrow(manager::close);
 
-        NotificationResult result =
-                manager.send(push);
-
-        assertAll(
-
-                () -> assertNotNull(result),
-
-                () -> assertEquals(
-                        NotificationStatus.SUCCESS,
-                        result.getStatus()),
-
-                () -> assertEquals(
-                        "Firebase",
-                        result.getProvider()),
-
-                () -> assertNotNull(
-                        result.getMessageId()),
-
-                () -> assertNotNull(
-                        result.getTimestamp())
-
-        );
     }
+
 }

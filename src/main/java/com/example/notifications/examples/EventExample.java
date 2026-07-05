@@ -8,24 +8,33 @@ import com.example.notifications.core.NotificationManager;
 import com.example.notifications.core.circuit.CircuitBreaker;
 import com.example.notifications.core.retry.FixedRetryPolicy;
 import com.example.notifications.event.EventBus;
+import com.example.notifications.event.LoggingEventListener;
+import com.example.notifications.event.MetricsEventListener;
 import com.example.notifications.factory.NotificationFactory;
-import com.example.notifications.model.NotificationResult;
 import com.example.notifications.model.email.EmailNotification;
 import com.example.notifications.provider.email.SendGridProvider;
 import com.example.notifications.provider.sms.TwilioProvider;
 
-public final class NotificationExample {
+public final class EventExample {
 
     public static void main(String[] args) {
+
+        EventBus bus = new EventBus();
+
+        MetricsEventListener metrics =
+                new MetricsEventListener();
+
+        bus.register(new LoggingEventListener());
+        bus.register(metrics);
 
         EmailConfiguration emailConfig =
                 EmailConfiguration.builder()
                         .provider(
                                 new SendGridProvider(
                                         SendGridConfiguration.builder()
-                                                .apiKey("demo-key")
+                                                .apiKey("demo")
                                                 .build()))
-                        .defaultFrom("noreply@example.com")
+                        .defaultFrom("demo@example.com")
                         .build();
 
         SmsConfiguration smsConfig =
@@ -39,24 +48,23 @@ public final class NotificationExample {
                      NotificationFactory.createManager(
                              emailConfig,
                              smsConfig,
-                             new FixedRetryPolicy(3, 500),
-                             new CircuitBreaker(3, 5000),
-                             new EventBus())) {
+                             new FixedRetryPolicy(3,500),
+                             new CircuitBreaker(3,5000),
+                             bus)) {
 
-            NotificationResult result =
-                    manager.send(
-                            EmailNotification.builder()
-                                    .recipient("john@example.com")
-                                    .subject("Welcome")
-                                    .message("Hello from Notification Library")
-                                    .build());
-
-            System.out.println("Status    : " + result.getStatus());
-            System.out.println("Provider  : " + result.getProvider());
-            System.out.println("MessageId : " + result.getMessageId());
-            System.out.println("Duration  : " + result.getDuration());
+            manager.send(
+                    EmailNotification.builder()
+                            .recipient("john@example.com")
+                            .subject("Events")
+                            .message("Testing EventBus")
+                            .build());
 
         }
+
+        System.out.println("Sent         : " + metrics.getMetrics().getSent());
+        System.out.println("Failed       : " + metrics.getMetrics().getFailed());
+        System.out.println("Success Rate : " + metrics.getMetrics().getSuccessRate()+"%");
+        System.out.println("Last Event   : " + metrics.getMetrics().getLastEvent());
 
     }
 

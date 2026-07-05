@@ -1,13 +1,14 @@
 package com.example.notifications.provider;
 
 import com.example.notifications.config.email.EmailConfiguration;
+import com.example.notifications.model.NotificationResult;
 import com.example.notifications.model.NotificationStatus;
 import com.example.notifications.model.email.EmailNotification;
 import com.example.notifications.sender.EmailSender;
 import com.example.notifications.validation.EmailValidator;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class EmailProviderFailureTest {
 
@@ -17,7 +18,8 @@ class EmailProviderFailureTest {
         EmailSender sender =
                 new EmailSender(
                         EmailConfiguration.builder()
-                                .provider(new FailingEmailProvider())
+                                .provider(
+                                        new FailingEmailProvider())
                                 .build(),
                         new EmailValidator());
 
@@ -28,15 +30,31 @@ class EmailProviderFailureTest {
                         .message("Body")
                         .build();
 
-        var result = sender.send(notification);
+        NotificationResult result =
+                sender.send(notification);
 
-        assertEquals(
-                NotificationStatus.FAILED,
-                result.getStatus());
+        assertAll(
 
-        assertEquals(
-                500,
-                result.getStatusCode());
+                () -> assertEquals(
+                        NotificationStatus.FAILED,
+                        result.getStatus()),
+
+                () -> assertEquals(
+                        "FailingProvider",
+                        result.getProvider()),
+
+                () -> assertEquals(
+                        500,
+                        result.getStatusCode()),
+
+                () -> assertNotNull(
+                        result.getTimestamp()),
+
+                () -> assertEquals(
+                        "Simulated provider failure",
+                        result.getErrorMessage())
+
+        );
 
     }
 

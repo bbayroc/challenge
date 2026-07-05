@@ -1,8 +1,5 @@
-package com.example.notifications;
+package com.example.notifications.event;
 
-import com.example.notifications.event.EventBus;
-import com.example.notifications.event.NotificationEvent;
-import com.example.notifications.event.NotificationEventType;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -10,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class EventBusTest {
+class EventBusTest {
 
     @Test
     void shouldReceiveNotificationEvents() {
@@ -29,7 +26,11 @@ public class EventBusTest {
                 )
         );
 
-        assertEquals(1, counter.get());
+        assertEquals(
+                1,
+                counter.get());
+
+        bus.shutdown();
 
     }
 

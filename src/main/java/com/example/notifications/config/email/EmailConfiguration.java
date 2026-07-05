@@ -83,8 +83,17 @@ public final class EmailConfiguration {
 
         public EmailConfiguration build() {
 
-            return new EmailConfiguration(this);
+            if (provider == null) {
+                throw new IllegalStateException(
+                        "Email provider is required");
+            }
 
+            if (timeout == null) {
+                throw new IllegalStateException(
+                        "Email timeout is required");
+            }
+
+            return new EmailConfiguration(this);
         }
 
     }
