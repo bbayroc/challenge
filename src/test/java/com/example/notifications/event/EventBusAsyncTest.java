@@ -16,24 +16,24 @@ class EventBusAsyncTest {
     void shouldPublishEventsAsynchronously()
             throws InterruptedException {
 
-        EventBus bus =
+        EventBus eventBus =
                 new EventBus(true);
 
-        AtomicInteger counter =
+        AtomicInteger receivedEvents =
                 new AtomicInteger();
 
-        CountDownLatch latch =
+        CountDownLatch CountDownLatch =
                 new CountDownLatch(1);
 
-        bus.register(event -> {
+        eventBus.register(event -> {
 
-            counter.incrementAndGet();
+            receivedEvents.incrementAndGet();
 
-            latch.countDown();
+            CountDownLatch.countDown();
 
         });
 
-        bus.publish(
+        eventBus.publish(
 
                 new NotificationEvent(
 
@@ -49,7 +49,7 @@ class EventBusAsyncTest {
 
         assertTrue(
 
-                latch.await(
+                CountDownLatch.await(
                         2,
                         TimeUnit.SECONDS)
 
@@ -59,11 +59,11 @@ class EventBusAsyncTest {
 
                 1,
 
-                counter.get()
+                receivedEvents.get()
 
         );
 
-        bus.shutdown();
+        eventBus.shutdown();
 
     }
 

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TemplateEngineTest {
 
@@ -19,16 +19,14 @@ class TemplateEngineTest {
                         "Hello {{name}}, order {{orderId}} ready",
                         Map.of(
                                 "name", "John",
-                                "orderId", "123"
-                        )
-                );
+                                "orderId", "123"));
 
-        String result = engine.render(template);
+        String result =
+                engine.render(template);
 
         assertEquals(
                 "Hello John, order 123 ready",
-                result
-        );
+                result);
 
     }
 

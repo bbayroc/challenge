@@ -24,6 +24,7 @@ public final class NotificationFactory {
     public static NotificationManager createManager(
             EmailConfiguration emailConfig,
             SmsConfiguration smsConfig,
+            PushConfiguration pushConfig,
             RetryPolicy retryPolicy,
             CircuitBreaker circuitBreaker,
             EventBus eventBus){
@@ -34,19 +35,9 @@ public final class NotificationFactory {
         SmsSender smsSender =
                 new SmsSender(smsConfig, new SmsValidator());
 
-        PushConfiguration pushConfiguration =
-                PushConfiguration.builder()
-                        .provider(
-                                new FirebasePushProvider(
-                                        FirebaseConfiguration.builder()
-                                                .projectId("demo-project")
-                                                .credentials("demo-credentials")
-                                                .build()))
-                        .build();
-
         PushSender pushSender =
                 new PushSender(
-                        pushConfiguration,
+                        pushConfig,
                         new PushValidator());
 
         return NotificationManager.builder()

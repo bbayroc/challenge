@@ -11,17 +11,14 @@ import com.example.notifications.core.retry.RetryPolicy;
 import com.example.notifications.event.EventBus;
 import com.example.notifications.model.Notification;
 import com.example.notifications.model.NotificationResult;
-import com.example.notifications.provider.push.FirebasePushProvider;
-import com.example.notifications.provider.push.PushProvider;
+import com.example.notifications.config.push.PushConfiguration;
 import com.example.notifications.sender.EmailSender;
 import com.example.notifications.sender.SmsSender;
 import com.example.notifications.validation.EmailValidator;
 import com.example.notifications.validation.SmsValidator;
-import com.example.notifications.config.push.PushConfiguration;
 import com.example.notifications.sender.PushSender;
 import com.example.notifications.validation.PushValidator;
 import com.example.notifications.exception.ConfigurationException;
-import com.example.notifications.config.push.FirebaseConfiguration;
 
 public final class NotificationSDK
         implements AutoCloseable {
@@ -40,19 +37,9 @@ public final class NotificationSDK
                         builder.smsConfig,
                         new SmsValidator());
 
-        PushConfiguration pushConfiguration =
-                PushConfiguration.builder()
-                        .provider(
-                                new FirebasePushProvider(
-                                        FirebaseConfiguration.builder()
-                                                .projectId("demo")
-                                                .credentials("demo")
-                                                .build()))
-                        .build();
-
         PushSender pushSender =
                 new PushSender(
-                        pushConfiguration,
+                        builder.pushConfig,
                         new PushValidator());
 
         this.manager =
@@ -96,15 +83,13 @@ public final class NotificationSDK
 
     }
 
-    // =========================
-    // BUILDER
-    // =========================
-
     public static final class Builder {
 
         private EmailConfiguration emailConfig;
 
         private SmsConfiguration smsConfig;
+
+        private PushConfiguration pushConfig;
 
         private RetryPolicy retryPolicy;
 
@@ -126,6 +111,15 @@ public final class NotificationSDK
                 SmsConfiguration smsConfig) {
 
             this.smsConfig = smsConfig;
+
+            return this;
+
+        }
+
+        public Builder push(
+                PushConfiguration pushConfig) {
+
+            this.pushConfig = pushConfig;
 
             return this;
 
@@ -168,6 +162,13 @@ public final class NotificationSDK
             if (smsConfig == null) {
                 throw new ConfigurationException(
                         "SMS configuration is required");
+            }
+
+            if (pushConfig == null) {
+
+                throw new ConfigurationException(
+                        "Push configuration is required");
+
             }
 
             if (retryPolicy == null) {

@@ -2,6 +2,7 @@ package com.example.notifications.validation;
 
 import com.example.notifications.exception.ValidationException;
 import com.example.notifications.model.push.PushNotification;
+import com.example.notifications.support.TestNotificationFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,15 +15,9 @@ class PushValidatorTest {
     @Test
     void shouldAcceptValidPushNotification() {
 
-        PushNotification notification =
-                PushNotification.builder()
-                        .deviceToken("device-123")
-                        .title("Welcome")
-                        .message("Hello")
-                        .build();
-
         assertDoesNotThrow(
-                () -> validator.validate(notification));
+                () -> validator.validate(
+                        TestNotificationFactory.push()));
 
     }
 

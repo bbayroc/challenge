@@ -1,11 +1,10 @@
 package com.example.notifications.validation;
 
 import com.example.notifications.exception.ValidationException;
-import com.example.notifications.model.email.EmailNotification;
+import com.example.notifications.support.TestNotificationFactory;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class EmailValidatorTest {
 
@@ -15,31 +14,19 @@ class EmailValidatorTest {
     @Test
     void shouldAcceptValidEmail() {
 
-        EmailNotification notification =
-                EmailNotification.builder()
-                        .recipient("john@example.com")
-                        .subject("Subject")
-                        .message("Body")
-                        .build();
-
         assertDoesNotThrow(
-                () -> validator.validate(notification));
+                () -> validator.validate(
+                        TestNotificationFactory.email()));
 
     }
 
     @Test
     void shouldRejectInvalidEmail() {
 
-        EmailNotification notification =
-                EmailNotification.builder()
-                        .recipient("invalid-email")
-                        .subject("Subject")
-                        .message("Body")
-                        .build();
-
         assertThrows(
                 ValidationException.class,
-                () -> validator.validate(notification));
+                () -> validator.validate(
+                        TestNotificationFactory.invalidEmail()));
 
     }
 

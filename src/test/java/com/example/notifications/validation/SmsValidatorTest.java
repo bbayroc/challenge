@@ -1,11 +1,10 @@
 package com.example.notifications.validation;
 
 import com.example.notifications.exception.ValidationException;
-import com.example.notifications.model.sms.SmsNotification;
+import com.example.notifications.support.TestNotificationFactory;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class SmsValidatorTest {
 
@@ -15,29 +14,19 @@ class SmsValidatorTest {
     @Test
     void shouldAcceptValidPhoneNumber() {
 
-        SmsNotification notification =
-                SmsNotification.builder()
-                        .phoneNumber("+51987654321")
-                        .message("Hello")
-                        .build();
-
         assertDoesNotThrow(
-                () -> validator.validate(notification));
+                () -> validator.validate(
+                        TestNotificationFactory.sms()));
 
     }
 
     @Test
     void shouldRejectInvalidPhoneNumber() {
 
-        SmsNotification notification =
-                SmsNotification.builder()
-                        .phoneNumber("invalid-phone")
-                        .message("Hello")
-                        .build();
-
         assertThrows(
                 ValidationException.class,
-                () -> validator.validate(notification));
+                () -> validator.validate(
+                        TestNotificationFactory.invalidSms()));
 
     }
 

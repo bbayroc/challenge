@@ -2,6 +2,8 @@ package com.example.notifications.examples;
 
 import com.example.notifications.config.email.EmailConfiguration;
 import com.example.notifications.config.email.SendGridConfiguration;
+import com.example.notifications.config.push.FirebaseConfiguration;
+import com.example.notifications.config.push.PushConfiguration;
 import com.example.notifications.config.sms.SmsConfiguration;
 import com.example.notifications.config.sms.TwilioConfiguration;
 import com.example.notifications.core.NotificationManager;
@@ -15,6 +17,7 @@ import com.example.notifications.model.email.EmailNotification;
 import com.example.notifications.model.push.PushNotification;
 import com.example.notifications.model.sms.SmsNotification;
 import com.example.notifications.provider.email.SendGridProvider;
+import com.example.notifications.provider.push.FirebasePushProvider;
 import com.example.notifications.provider.sms.TwilioProvider;
 
 import java.util.List;
@@ -40,10 +43,20 @@ public final class BatchExample {
                                         new TwilioConfiguration()))
                         .build();
 
+        PushConfiguration pushConfig =
+                PushConfiguration.builder()
+                        .provider(
+                                new FirebasePushProvider(
+                                        FirebaseConfiguration.builder()
+                                                .projectId("demo-project")
+                                                .build()))
+                        .build();
+
         try (NotificationManager manager =
                      NotificationFactory.createManager(
                              emailConfig,
                              smsConfig,
+                             pushConfig,
                              new ExponentialBackoffRetryPolicy(3),
                              new CircuitBreaker(3, 5000),
                              new EventBus())) {

@@ -13,31 +13,33 @@ class NotificationMetricsTest {
                 new NotificationMetrics();
 
         metrics.incrementSent();
-
         metrics.incrementSent();
-
         metrics.incrementFailed();
 
-        assertEquals(
-                2,
-                metrics.getSent());
+        assertAll(
 
-        assertEquals(
-                1,
-                metrics.getFailed());
+                () -> assertEquals(
+                        2,
+                        metrics.getSent()),
 
-        assertEquals(
-                3,
-                metrics.getTotal());
+                () -> assertEquals(
+                        1,
+                        metrics.getFailed()),
 
-        assertEquals(
-                NotificationEventType.FAILED,
-                metrics.getLastEvent());
+                () -> assertEquals(
+                        3,
+                        metrics.getTotal()),
 
-        assertEquals(
-                66.666,
-                metrics.getSuccessRate(),
-                0.01);
+                () -> assertEquals(
+                        NotificationEventType.FAILED,
+                        metrics.getLastEvent()),
+
+                () -> assertEquals(
+                        66.666,
+                        metrics.getSuccessRate(),
+                        0.01)
+
+        );
 
     }
 

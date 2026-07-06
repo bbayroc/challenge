@@ -1,503 +1,149 @@
-# Notification SDK
+# Notifications Library
 
-A lightweight, framework-agnostic Java library that provides a unified API for sending notifications through multiple channels.
+![Java](https://img.shields.io/badge/Java-21-orange)
 
-The library focuses on **architecture**, **extensibility**, and **clean design**, allowing applications to switch providers or add new notification channels without changing business logic.
+![Maven](https://img.shields.io/badge/Maven-3.9+-blue)
+
+![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen)
+
+![License](https://img.shields.io/badge/License-MIT-green)
+
+![Build](https://img.shields.io/badge/Build-Success-success)
+
+A lightweight, framework-agnostic notification library for Java 21+ that provides a unified API for sending Email, SMS, and Push notifications.
+
+The library was designed with extensibility and clean architecture in mind, allowing applications to integrate multiple notification providers without depending on any specific framework such as Spring Boot.
+
+It includes built-in support for asynchronous execution, batch processing, retry policies, circuit breakers, template rendering, event publishing, and multiple providers while keeping configuration entirely in Java code.
 
 ---
 
+## Architecture Overview
+
+```mermaid
+flowchart TD
+
+A[Notification]
+
+A --> B[Validation]
+
+B --> C[Circuit Breaker]
+
+C --> D[Retry Policy]
+
+D --> E[Channel Handler]
+
+E --> F1[Email Provider]
+
+E --> F2[SMS Provider]
+
+E --> F3[Push Provider]
+
+F1 --> G[Notification Result]
+
+F2 --> G
+
+F3 --> G
+
+G --> H[Event Bus]
+```
+
 ## Features
 
+- Java 21+
+- Framework agnostic (no Spring Boot required)
+- Maven project
 - Unified notification API
+- Builder-based configuration
 - Email notifications
 - SMS notifications
 - Push notifications
 - Multiple providers per channel
-    - SendGrid
-    - Mailgun
-    - Twilio
-    - Firebase
-- Java-based configuration
+- Template rendering
 - Retry policies
 - Circuit Breaker
-- Validation
-- Message templates
 - Batch notifications
-- Asynchronous notifications
-- EventBus (Pub/Sub)
-- Framework agnostic
-- Java 21
-- Maven project
+- Asynchronous notifications using `CompletableFuture`
+- Event Bus
+- Notification metrics
+- Provider abstraction
+- Validation framework
+- Docker support
+- Extensive unit tests
 
 ---
 
-# Architecture
-                     +----------------------+
-                     | NotificationSDK      |
-                     +----------+-----------+
-                                |
-                                v
-                    +------------------------+
-                    | NotificationManager    |
-                    +-----------+------------+
-                                |
-                                v
-                    +------------------------+
-                    | ExecutionPipeline      |
-                    +-----------+------------+
-                                |
-          +---------------------+----------------------+
-          |                     |                      |
-          v                     v                      v
-ValidationExecutor      RetryExecutor        CircuitBreaker
-|                     |                      |
-+---------------------+----------------------+
-|
-v
-+--------------------+
-| ChannelResolver    |
-+---------+----------+
-|
-+-------------------------+----------------------------+
-|                         |                            |
-v                         v                            v
-EmailChannelHandler    SmsChannelHandler        PushChannelHandler
-|                         |                            |
-v                         v                            v
-EmailSender             SmsSender               PushProvider
-|                         |
-v                         v
-EmailProvider           SmsProvider
-|                         |
-+-----------+-------------+
-|
-Different Providers
----
+## Requirements
 
-# Design Goals
-
-The project was designed around the following principles:
-
-- Framework agnostic
-- SOLID principles
-- Extensibility
-- Separation of responsibilities
-- Composition over inheritance
-- Testability
-
-Every major component has a single responsibility, making the library easy to extend and maintain.
-
----
-
-# Supported Channels
-
-| Channel | Status |
-|----------|--------|
-| Email | ✅ |
-| SMS | ✅ |
-| Push Notification | ✅ |
-| Slack | Planned |
-
----
-
-# Supported Providers
-
-## Email
-
-- SendGrid
-- Mailgun
-
-## SMS
-
-- Twilio
-
-## Push
-
-- Firebase Cloud Messaging (simulation)
-
----
-
-# Project Structure
-
-```
-src
- ├── config
- ├── core
- ├── event
- ├── examples
- ├── exception
- ├── factory
- ├── model
- ├── provider
- ├── sender
- ├── template
- ├── validation
- └── tests
-```
-
----
-
-# Why this library?
-
-Most notification libraries are tightly coupled to a single provider.
-
-This project separates:
-
-- Notification channels
-- Providers
-- Validation
-- Retry policies
-- Execution pipeline
-- Events
-
-allowing applications to replace providers or add new channels without changing client code.
-# Requirements
-
-- Java 21 or later
+- Java 21 or newer
 - Maven 3.9+
-- No external frameworks required
-- SLF4J compatible logger (optional)
-
-The library is completely framework agnostic and can be used in:
-
-- Plain Java applications
-- Spring Boot
-- Quarkus
-- Micronaut
-- Jakarta EE
-- Desktop applications
-- CLI tools
-
-No annotations, dependency injection containers, or external configuration files are required.
 
 ---
 
-# Installation
+## Installation
 
-## Maven
-
-If the library is published to Maven Central:
-
-```xml
-<dependency>
-    <groupId>com.example</groupId>
-    <artifactId>notifications-sdk</artifactId>
-    <version>1.0.0</version>
-</dependency>
-```
-
-If using the project locally:
-
-```xml
-<dependency>
-    <groupId>com.example</groupId>
-    <artifactId>notifications-sdk</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-</dependency>
-```
-
----
-
-## Gradle
-
-```gradle
-implementation "com.example:notifications-sdk:1.0.0"
-```
-
----
-
-# Building from Source
-
-Clone the repository:
+Clone the repository
 
 ```bash
-git clone https://github.com/your-user/notifications-sdk.git
-
-cd notifications-sdk
+git clone https://github.com/bbayroc/challenge.git
 ```
 
-Compile the project:
+Enter the project directory
 
 ```bash
-mvn clean compile
+cd challenge
 ```
 
-Run all tests:
-
-```bash
-mvn clean test
-```
-
-Generate the package:
+Build the library
 
 ```bash
 mvn clean package
 ```
 
----
-
-# Project Modules
-
-Although distributed as a single library, the internal architecture is organized into logical modules.
-
-| Module | Responsibility |
-|---------|----------------|
-| config | Configuration objects |
-| core | Notification pipeline |
-| provider | Notification providers |
-| sender | Channel implementations |
-| validation | Notification validation |
-| model | Domain models |
-| event | Pub/Sub event system |
-| template | Template engine |
-| factory | Object creation |
-| examples | Usage examples |
-
----
-
-# Configuration Philosophy
-
-Unlike many notification libraries, this project intentionally avoids:
-
-- YAML
-- properties files
-- XML
-- dependency injection containers
-- framework-specific configuration
-
-Everything is configured through Java objects.
-
-Example:
-
-```java
-EmailConfiguration configuration =
-        EmailConfiguration.builder()
-                .provider(
-                        new SendGridProvider(
-                                SendGridConfiguration.builder()
-                                        .apiKey("your-api-key")
-                                        .build()
-                        )
-                )
-                .defaultFrom("noreply@example.com")
-                .build();
-```
-
-This approach provides:
-
-- compile-time safety
-- IDE autocompletion
-- immutable configuration objects
-- framework independence
-
----
-
-# Library Overview
-
-The library separates responsibilities into independent layers.
-
-```
-
-```text
-Application
-      │
-      ▼
-NotificationSDK
-      │
-      ▼
-NotificationManager
-      │
-      ▼
-Execution Pipeline
-      │
-      ▼
-Channel Resolver
-      │
-      ▼
-Channel Handler
-      │
-      ▼
-Sender
-      │
-      ▼
-Provider
-```
-# Requirements
-
-- Java 21 or later
-- Maven 3.9+
-- No external frameworks required
-- SLF4J compatible logger (optional)
-
-The library is completely framework agnostic and can be used in:
-
-- Plain Java applications
-- Spring Boot
-- Quarkus
-- Micronaut
-- Jakarta EE
-- Desktop applications
-- CLI tools
-
-No annotations, dependency injection containers, or external configuration files are required.
-
----
-
-# Installation
-
-## Maven
-
-If the library is published to Maven Central:
-
-```xml
-<dependency>
-    <groupId>com.example</groupId>
-    <artifactId>notifications-sdk</artifactId>
-    <version>1.0.0</version>
-</dependency>
-```
-
-If using the project locally:
-
-```xml
-<dependency>
-    <groupId>com.example</groupId>
-    <artifactId>notifications-sdk</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-</dependency>
-```
-
----
-
-## Gradle
-
-```gradle
-implementation "com.example:notifications-sdk:1.0.0"
-```
-
----
-
-# Building from Source
-
-Clone the repository:
+Run all tests
 
 ```bash
-git clone https://github.com/your-user/notifications-sdk.git
-
-cd notifications-sdk
+mvn test
 ```
 
-Compile the project:
-
-```bash
-mvn clean compile
-```
-
-Run all tests:
-
-```bash
-mvn clean test
-```
-
-Generate the package:
+Generate the shaded JAR
 
 ```bash
 mvn clean package
 ```
 
----
-
-# Project Modules
-
-Although distributed as a single library, the internal architecture is organized into logical modules.
-
-| Module | Responsibility |
-|---------|----------------|
-| config | Configuration objects |
-| core | Notification pipeline |
-| provider | Notification providers |
-| sender | Channel implementations |
-| validation | Notification validation |
-| model | Domain models |
-| event | Pub/Sub event system |
-| template | Template engine |
-| factory | Object creation |
-| examples | Usage examples |
-
----
-
-# Configuration Philosophy
-
-Unlike many notification libraries, this project intentionally avoids:
-
-- YAML
-- properties files
-- XML
-- dependency injection containers
-- framework-specific configuration
-
-Everything is configured through Java objects.
-
-Example:
-
-```java
-EmailConfiguration configuration =
-        EmailConfiguration.builder()
-                .provider(
-                        new SendGridProvider(
-                                SendGridConfiguration.builder()
-                                        .apiKey("your-api-key")
-                                        .build()
-                        )
-                )
-                .defaultFrom("noreply@example.com")
-                .build();
-```
-
-This approach provides:
-
-- compile-time safety
-- IDE autocompletion
-- immutable configuration objects
-- framework independence
-
----
-
-# Library Overview
-
-The library separates responsibilities into independent layers.
+The executable JAR will be generated under
 
 ```
-
-```text
-Application
-      │
-      ▼
-NotificationSDK
-      │
-      ▼
-NotificationManager
-      │
-      ▼
-Execution Pipeline
-      │
-      ▼
-Channel Resolver
-      │
-      ▼
-Channel Handler
-      │
-      ▼
-Sender
-      │
-      ▼
-Provider
+target/notifications-lib-1.0.0.jar
 ```
+
+Run the demo
+
+```bash
+java -jar target/notifications-lib-1.0.0.jar
+```
+---
+
 # Quick Start
 
-The following example demonstrates the minimum configuration required to send a notification using the library.
+The library can be used either through the high-level `NotificationSDK` or by creating a `NotificationManager` directly.
 
-## 1. Configure an Email Provider
+The SDK is the recommended entry point for most applications.
+
+---
+
+## Supported Channels
+
+| Channel | Providers |
+|----------|-----------|
+| Email | SendGrid, Mailgun |
+| SMS | Twilio |
+| Push | Firebase, OneSignal |
+
+---
+
+## Sending an Email
 
 ```java
 EmailConfiguration emailConfiguration =
@@ -505,1333 +151,844 @@ EmailConfiguration emailConfiguration =
                 .provider(
                         new SendGridProvider(
                                 SendGridConfiguration.builder()
-                                        .apiKey("your-api-key")
-                                        .build()
-                        )
-                )
-                .defaultFrom("notifications@example.com")
+                                        .apiKey("YOUR_API_KEY")
+                                        .build()))
+                .defaultFrom("noreply@example.com")
+                .build();
+
+SmsConfiguration smsConfiguration =
+        SmsConfiguration.builder()
+                .provider(
+                        new TwilioProvider(
+                                new TwilioConfiguration()))
+                .build();
+
+PushConfiguration pushConfiguration =
+        PushConfiguration.builder()
+                .provider(
+                        new FirebasePushProvider(
+                                FirebaseConfiguration.builder()
+                                        .projectId("demo-project")
+                                        .build()))
+                .build();
+
+try (NotificationSDK sdk =
+             NotificationSDK.builder()
+                     .email(emailConfiguration)
+                     .sms(smsConfiguration)
+                     .push(pushConfiguration)
+                     .retryPolicy(
+                             new ExponentialBackoffRetryPolicy(3))
+                     .circuitBreaker(
+                             new CircuitBreaker(3, 5000))
+                     .build()) {
+
+    NotificationResult result =
+            sdk.send(
+                    EmailNotification.builder()
+                            .recipient("john@example.com")
+                            .subject("Welcome")
+                            .message("Hello from Notifications Library")
+                            .build());
+
+}
+```
+
+---
+
+## Sending an SMS
+
+```java
+NotificationResult result =
+        sdk.send(
+                SmsNotification.builder()
+                        .phoneNumber("+15551234567")
+                        .message("Your verification code is 123456")
+                        .build());
+```
+
+---
+
+## Sending a Push Notification
+
+```java
+NotificationResult result =
+        sdk.send(
+                PushNotification.builder()
+                        .deviceToken("device-token")
+                        .title("Welcome")
+                        .message("Your notification was delivered successfully.")
+                        .build());
+```
+
+---
+
+## Using NotificationManager
+
+Applications requiring finer control over handlers and infrastructure components may use `NotificationManager` directly.
+
+```java
+NotificationManager manager =
+        NotificationManager.builder()
+                .handler(emailHandler)
+                .handler(smsHandler)
+                .handler(pushHandler)
+                .retryPolicy(
+                        new FixedRetryPolicy(3, 500))
+                .circuitBreaker(
+                        new CircuitBreaker(3, 5000))
+                .build();
+
+NotificationResult result =
+        manager.send(notification);
+```
+
+---
+
+## Notification Result
+
+Every operation returns a `NotificationResult`.
+
+```java
+System.out.println(result.getStatus());
+System.out.println(result.getProvider());
+System.out.println(result.getMessageId());
+System.out.println(result.getTimestamp());
+```
+
+Typical output
+
+```text
+Status      : SUCCESS
+Provider    : SendGrid
+Message Id  : 2d7bc6fa...
+Timestamp   : 2026-06-05T14:30:18Z
+```
+
+---
+
+# Configuration
+
+The library is configured entirely through Java code.
+
+No XML, YAML, annotations or external configuration files are required.
+
+Every notification channel has its own configuration object, allowing applications to select providers and customize behavior while remaining completely framework independent.
+
+---
+
+## Email Configuration
+
+```java
+EmailConfiguration emailConfiguration =
+        EmailConfiguration.builder()
+                .provider(
+                        new SendGridProvider(
+                                SendGridConfiguration.builder()
+                                        .apiKey("YOUR_API_KEY")
+                                        .build()))
+                .defaultFrom("noreply@example.com")
+                .build();
+```
+
+or
+
+```java
+EmailConfiguration emailConfiguration =
+        EmailConfiguration.builder()
+                .provider(
+                        new MailgunProvider(
+                                MailgunConfiguration.builder()
+                                        .apiKey("YOUR_API_KEY")
+                                        .build()))
+                .defaultFrom("noreply@example.com")
                 .build();
 ```
 
 ---
 
-## 2. Configure an SMS Provider
+## SMS Configuration
 
 ```java
 SmsConfiguration smsConfiguration =
         SmsConfiguration.builder()
                 .provider(
                         new TwilioProvider(
-                                new TwilioConfiguration()
-                        )
-                )
+                                new TwilioConfiguration()))
                 .build();
 ```
 
 ---
 
-## 3. Configure Retry Policy
+## Push Configuration
+
+Firebase
+
+```java
+PushConfiguration pushConfiguration =
+        PushConfiguration.builder()
+                .provider(
+                        new FirebasePushProvider(
+                                FirebaseConfiguration.builder()
+                                        .projectId("demo-project")
+                                        .build()))
+                .build();
+```
+
+OneSignal
+
+```java
+PushConfiguration pushConfiguration =
+        PushConfiguration.builder()
+                .provider(
+                        new OneSignalPushProvider())
+                .build();
+```
+
+---
+
+## Retry Policies
+
+The library includes two retry implementations.
+
+### Fixed Retry
+
+Retries using a constant delay.
 
 ```java
 RetryPolicy retryPolicy =
-        new ExponentialBackoffRetryPolicy(3);
+        new FixedRetryPolicy(
+                3,
+                500);
 ```
-
-The previous configuration retries failed deliveries up to **three times** using exponential backoff.
 
 ---
 
-## 4. Configure Circuit Breaker
+### Exponential Backoff
+
+Retries using exponentially increasing delays.
 
 ```java
-CircuitBreaker circuitBreaker =
+RetryPolicy retryPolicy =
+        new ExponentialBackoffRetryPolicy(
+                3);
+```
+
+---
+
+## Circuit Breaker
+
+Every notification channel owns its own Circuit Breaker instance.
+
+Failures on one channel do not affect the others.
+
+```java
+CircuitBreaker breaker =
         new CircuitBreaker(
                 3,
-                5000
-        );
+                5000);
 ```
 
-Meaning:
+Configuration parameters
 
-- Open the circuit after **3 failed operations**
-- Wait **5 seconds** before allowing another request
+| Property | Description |
+|----------|-------------|
+| failureThreshold | Number of consecutive failures before opening the circuit |
+| resetTimeout | Time in milliseconds before allowing another request |
 
 ---
 
-## 5. Create the EventBus
+## Notification Manager
 
-```java
-EventBus eventBus = new EventBus();
-```
-
-The EventBus is optional but recommended.
-
-It allows applications to react to notification events without modifying the notification pipeline.
-
----
-
-## 6. Create the NotificationManager
+Once all components have been configured, they can be assembled using the builder.
 
 ```java
 NotificationManager manager =
-        NotificationFactory.createManager(
-                emailConfiguration,
-                smsConfiguration,
-                retryPolicy,
-                circuitBreaker,
-                eventBus
-        );
-```
-
-The factory assembles the complete execution pipeline.
-
-Applications never need to instantiate internal components directly.
-
----
-
-# Sending Notifications
-
-## Email
-
-```java
-EmailNotification email =
-        EmailNotification.builder()
-                .recipient("john@example.com")
-                .subject("Welcome")
-                .message("Welcome to Notification SDK!")
-                .build();
-
-NotificationResult result =
-        manager.send(email);
-```
-
----
-
-## SMS
-
-```java
-SmsNotification sms =
-        SmsNotification.builder()
-                .phoneNumber("+51999999999")
-                .message("Verification code: 123456")
-                .build();
-
-NotificationResult result =
-        manager.send(sms);
-```
-
----
-
-## Push Notification
-
-```java
-PushNotification push =
-        PushNotification.builder()
-                .deviceToken("device-token")
-                .title("New Message")
-                .message("You have a new notification")
-                .build();
-
-NotificationResult result =
-        manager.send(push);
-```
-
----
-
-# Reading the Result
-
-Every notification returns a `NotificationResult`.
-
-```java
-NotificationResult result =
-        manager.send(email);
-
-System.out.println(result.getStatus());
-System.out.println(result.getProvider());
-System.out.println(result.getMessageId());
-System.out.println(result.getStatusCode());
-System.out.println(result.getDuration());
-```
-
-Typical output:
-
-```
-Status      : SUCCESS
-Provider    : SendGrid
-Status Code : 200
-Message ID  : 8dc2e0...
-Duration    : PT0.081S
-```
-
----
-
-# Error Handling
-
-Validation errors and delivery failures are handled separately.
-
-Validation example:
-
-```java
-try {
-
-    manager.send(email);
-
-} catch (ValidationException ex) {
-
-    System.out.println(ex.getMessage());
-
-}
-```
-
-Delivery example:
-
-```java
-NotificationResult result =
-        manager.send(email);
-
-if (result.getStatus() == NotificationStatus.FAILED) {
-
-    System.out.println(result.getErrorMessage());
-
-}
-```
-
-This separation allows applications to distinguish between invalid input and provider failures.
-
----
-
-# Using the SDK Facade
-
-Applications may also use the higher-level `NotificationSDK` facade.
-
-```java
-NotificationSDK sdk =
-        new NotificationSDK.Builder()
-                .email(emailConfiguration)
-                .sms(smsConfiguration)
+        NotificationManager.builder()
+                .handler(emailHandler)
+                .handler(smsHandler)
+                .handler(pushHandler)
                 .retryPolicy(retryPolicy)
-                .circuitBreaker(circuitBreaker)
-                .eventBus(eventBus)
+                .circuitBreaker(breaker)
                 .build();
-
-sdk.send(email);
 ```
-
-For most applications this is the recommended entry point.
 
 ---
 
-# Typical Application Flow
+# Supported Providers
+
+| Channel | Provider | Status |
+|----------|----------|--------|
+| Email | SendGrid | Supported |
+| Email | Mailgun | Supported |
+| SMS | Twilio | Supported |
+| Push | Firebase | Supported |
+| Push | OneSignal | Supported |
+
+The provider architecture is extensible.
+
+Adding support for another provider only requires implementing the corresponding provider interface without modifying existing code.
+
+---
+
+# Notification Processing
+
+Every notification follows the same execution pipeline regardless of the channel or provider.
 
 ```
-Application
-      │
-      ▼
-NotificationSDK
-      │
-      ▼
-NotificationManager
-      │
-      ▼
-ExecutionPipeline
+Notification
       │
       ▼
 Validation
       │
       ▼
-Retry
-      │
-      ▼
 Circuit Breaker
       │
       ▼
-Channel Resolver
+Retry Policy
+      │
+      ▼
+Channel Handler
       │
       ▼
 Provider
       │
       ▼
-NotificationResult
+Notification Result
+      │
+      ▼
+EventBus
 ```
+
+This pipeline guarantees consistent behavior across Email, SMS and Push notifications while keeping providers completely interchangeable.
 
 ---
 
-# Supported Notification Types
+# Validation
 
-| Notification | Builder | Required Fields |
-|--------------|---------|-----------------|
-| EmailNotification | ✅ | recipient, subject, message |
-| SmsNotification | ✅ | phoneNumber, message |
-| PushNotification | ✅ | deviceToken, title, message |
+Each notification type is validated before reaching the configured provider.
 
-All notification models are immutable and created using the Builder pattern.
-# Configuration Guide
+Validation is performed through a registry-based mechanism, allowing new notification types to be added without modifying the execution pipeline.
 
-All configuration in Notification SDK is performed using immutable Java objects.
+Current validators include:
 
-The library intentionally avoids external configuration files such as:
+- EmailValidator
+- SmsValidator
+- PushValidator
 
-- application.yml
-- application.properties
-- XML configuration
-- Dependency Injection containers
-
-This makes the library portable across any Java application.
-
----
-
-# Email Configuration
-
-The Email channel requires an `EmailConfiguration` object.
-
-```java
-EmailConfiguration configuration =
-        EmailConfiguration.builder()
-                .provider(
-                        new SendGridProvider(
-                                SendGridConfiguration.builder()
-                                        .apiKey("YOUR_API_KEY")
-                                        .timeout(Duration.ofSeconds(30))
-                                        .build()
-                        )
-                )
-                .defaultFrom("notifications@example.com")
-                .build();
-```
-
-Available options:
-
-| Property | Description |
-|----------|-------------|
-| provider | Email provider implementation |
-| defaultFrom | Default sender address |
-| timeout | Provider timeout |
-
----
-
-# SendGrid Provider
-
-```java
-SendGridConfiguration configuration =
-        SendGridConfiguration.builder()
-                .apiKey("YOUR_API_KEY")
-                .timeout(Duration.ofSeconds(30))
-                .build();
-
-EmailProvider provider =
-        new SendGridProvider(configuration);
-```
-
-Current simulated response:
-
-```
-HTTP Status : 200
-Provider    : SendGrid
-Result      : SUCCESS
-```
-
----
-
-# Mailgun Provider
-
-```java
-MailgunConfiguration configuration =
-        MailgunConfiguration.builder()
-                .apiKey("YOUR_API_KEY")
-                .timeout(Duration.ofSeconds(30))
-                .build();
-
-EmailProvider provider =
-        new MailgunProvider(configuration);
-```
-
-Current simulated response:
-
-```
-HTTP Status : 200
-Provider    : Mailgun
-Result      : SUCCESS
-```
-
----
-
-# SMS Configuration
-
-```java
-SmsConfiguration configuration =
-        SmsConfiguration.builder()
-                .provider(
-                        new TwilioProvider(
-                                new TwilioConfiguration()
-                        )
-                )
-                .timeout(Duration.ofSeconds(30))
-                .build();
-```
-
-Available options:
-
-| Property | Description |
-|----------|-------------|
-| provider | SMS provider |
-| timeout | Delivery timeout |
-
----
-
-# Twilio Provider
-
-```java
-TwilioProvider provider =
-        new TwilioProvider(
-                new TwilioConfiguration()
-        );
-```
-
-Simulated response:
-
-```
-HTTP Status : 200
-Provider    : Twilio
-Result      : SUCCESS
-```
-
----
-
-# Push Notifications
-
-Push notifications do not currently require additional configuration.
-
-The default provider is Firebase.
-
-```java
-PushProvider provider =
-        new FirebasePushProvider();
-```
-
-Simulated response:
-
-```
-HTTP Status : 200
-Provider    : Firebase
-Result      : SUCCESS
-```
+Validation failures throw a `ValidationException` before any provider is invoked.
 
 ---
 
 # Retry Policies
 
-Notification SDK includes interchangeable retry strategies.
+Retry behavior is completely configurable.
 
-## Fixed Retry
+The library currently provides two implementations.
 
-Retries using a constant delay.
+## Fixed Retry Policy
+
+Retries requests using a constant delay.
 
 ```java
 RetryPolicy retryPolicy =
         new FixedRetryPolicy(
                 3,
-                1000
-        );
+                500);
 ```
-
-Meaning:
-
-- maximum attempts: 3
-- delay between attempts: 1 second
 
 ---
 
-## Exponential Backoff
+## Exponential Backoff Retry Policy
 
-Delay increases after every retry.
+Retries requests using exponentially increasing delays.
 
 ```java
 RetryPolicy retryPolicy =
-        new ExponentialBackoffRetryPolicy(3);
+        new ExponentialBackoffRetryPolicy(
+                3);
 ```
 
-Typical delays:
-
-| Attempt | Delay |
-|---------|-------|
-| 1 | 500 ms |
-| 2 | 1000 ms |
-| 3 | 2000 ms |
+Both policies implement the same `RetryPolicy` interface, allowing custom implementations to be plugged into the library.
 
 ---
 
 # Circuit Breaker
 
-The Circuit Breaker prevents repeated calls to failing providers.
+The library includes a built-in Circuit Breaker implementation.
+
+Unlike a global circuit breaker, every notification channel owns an independent instance.
+
+This means failures affecting one provider do not prevent notifications from being delivered through other channels.
+
+For example
+
+```
+Email Circuit   → OPEN
+
+SMS Circuit     → CLOSED
+
+Push Circuit    → CLOSED
+```
+
+The Email provider may temporarily stop accepting requests while SMS and Push continue working normally.
+
+---
+
+# Batch Notifications
+
+Multiple notifications can be processed together.
 
 ```java
-CircuitBreaker breaker =
-        new CircuitBreaker(
-                3,
-                5000
-        );
+List<NotificationResult> results =
+        manager.sendBatch(
+                notifications);
 ```
 
-Configuration:
-
-| Parameter | Description |
-|-----------|-------------|
-| failureThreshold | Failed operations before opening |
-| resetTimeoutMillis | Time before entering HALF_OPEN |
-
-Lifecycle:
-
-```
-CLOSED
-   │
-   ▼
-Failures
-   │
-   ▼
-OPEN
-   │
-(wait timeout)
-   │
-   ▼
-HALF_OPEN
-   │
-   ├── Success → CLOSED
-   └── Failure → OPEN
-```
+The returned list preserves the order of the submitted notifications.
 
 ---
 
-# EventBus
+# Asynchronous Notifications
 
-Applications may subscribe to notification events.
+The library supports asynchronous execution through Java's `CompletableFuture`.
 
 ```java
-EventBus eventBus = new EventBus();
+CompletableFuture<NotificationResult> future =
+        manager.sendAsync(notification);
 
-eventBus.register(
-        new LoggingEventListener());
-
-eventBus.register(
-        new MetricsEventListener());
+NotificationResult result =
+        future.join();
 ```
 
-Current events:
-
-| Event | Description |
-|-------|-------------|
-| SENT | Notification delivered |
-| FAILED | Notification failed |
-| CIRCUIT_OPENED | Circuit entered OPEN state |
-| CIRCUIT_CLOSED | Circuit returned to CLOSED |
-
----
-
-# Logging
-
-Notification SDK uses SLF4J.
-
-Typical provider log:
-
-```
-INFO
-Simulating SendGrid email delivery to john@example.com
-```
-
-Applications are free to plug any SLF4J implementation:
-
-- Logback
-- Log4J2
-- JUL bridge
-- SimpleLogger
-
----
-
-# Configuration Best Practices
-
-✔ Build configuration once.
-
-✔ Reuse provider instances.
-
-✔ Keep API keys outside source code.
-
-✔ Prefer immutable configuration.
-
-✔ Share a single EventBus across the application.
-
-✔ Reuse NotificationSDK instead of recreating it.
-
----
-
-# Configuration Object Relationships
-
-```
-Application
-      │
-      ▼
-NotificationSDK.Builder
-      │
-      ├───────────────┐
-      ▼               ▼
-EmailConfiguration   SmsConfiguration
-      │               │
-      ▼               ▼
-EmailProvider      SmsProvider
-      │               │
-      ▼               ▼
-SendGrid        Twilio
-Mailgun
-```
-# Configuration Guide
-
-All configuration in Notification SDK is performed using immutable Java objects.
-
-The library intentionally avoids external configuration files such as:
-
-- application.yml
-- application.properties
-- XML configuration
-- Dependency Injection containers
-
-This makes the library portable across any Java application.
-
----
-
-# Email Configuration
-
-The Email channel requires an `EmailConfiguration` object.
+Batch processing also supports asynchronous execution.
 
 ```java
-EmailConfiguration configuration =
-        EmailConfiguration.builder()
-                .provider(
-                        new SendGridProvider(
-                                SendGridConfiguration.builder()
-                                        .apiKey("YOUR_API_KEY")
-                                        .timeout(Duration.ofSeconds(30))
-                                        .build()
-                        )
-                )
-                .defaultFrom("notifications@example.com")
-                .build();
+CompletableFuture<List<NotificationResult>> future =
+        manager.sendBatchAsync(
+                notifications);
 ```
-
-Available options:
-
-| Property | Description |
-|----------|-------------|
-| provider | Email provider implementation |
-| defaultFrom | Default sender address |
-| timeout | Provider timeout |
 
 ---
 
-# SendGrid Provider
+# Template Support
+
+Templates allow separating message content from application logic.
+
+Example
 
 ```java
-SendGridConfiguration configuration =
-        SendGridConfiguration.builder()
-                .apiKey("YOUR_API_KEY")
-                .timeout(Duration.ofSeconds(30))
-                .build();
-
-EmailProvider provider =
-        new SendGridProvider(configuration);
+NotificationTemplate template =
+        new NotificationTemplate(
+                "Hello {{name}}, your order {{order}} is ready.",
+                Map.of(
+                        "name", "John",
+                        "order", "12345"));
 ```
 
-Current simulated response:
+The template engine automatically replaces placeholders before the notification reaches the provider.
 
-```
-HTTP Status : 200
-Provider    : SendGrid
-Result      : SUCCESS
-```
+Template rendering is supported by:
+
+- Email
+- SMS
+- Push
 
 ---
 
-# Mailgun Provider
+# Event Bus
+
+Every notification generates events that can be consumed by application code.
+
+Supported events include
+
+- SENT
+- FAILED
+
+Example
 
 ```java
-MailgunConfiguration configuration =
-        MailgunConfiguration.builder()
-                .apiKey("YOUR_API_KEY")
-                .timeout(Duration.ofSeconds(30))
-                .build();
+EventBus bus =
+        new EventBus();
 
-EmailProvider provider =
-        new MailgunProvider(configuration);
+bus.register(event ->
+
+        System.out.println(event.getType()));
 ```
 
-Current simulated response:
+The Event Bus supports both synchronous and asynchronous event publishing.
 
+---
+
+# Notification Metrics
+
+The library includes a lightweight metrics component capable of tracking notification activity.
+
+Collected metrics include
+
+- Total notifications
+- Successful notifications
+- Failed notifications
+- Success rate
+- Last processed event
+
+These metrics can be used by applications to expose monitoring dashboards or health indicators.
+
+---
+
+# Docker
+
+The project includes a multi-stage Dockerfile for building and running the library without requiring Maven or Java to be installed on the host machine.
+
+Build the image
+
+```bash
+docker build -t notifications-lib .
 ```
-HTTP Status : 200
-Provider    : Mailgun
-Result      : SUCCESS
+
+Run the container
+
+```bash
+docker run --rm notifications-lib
+```
+
+The Docker image performs a complete Maven build before packaging the application into a lightweight runtime image.
+
+---
+
+# Running Tests
+
+Execute the complete test suite
+
+```bash
+mvn test
+```
+
+Generate the packaged library
+
+```bash
+mvn clean package
+```
+
+Run the verification lifecycle
+
+```bash
+mvn verify
 ```
 
 ---
 
-# SMS Configuration
-
-```java
-SmsConfiguration configuration =
-        SmsConfiguration.builder()
-                .provider(
-                        new TwilioProvider(
-                                new TwilioConfiguration()
-                        )
-                )
-                .timeout(Duration.ofSeconds(30))
-                .build();
-```
-
-Available options:
-
-| Property | Description |
-|----------|-------------|
-| provider | SMS provider |
-| timeout | Delivery timeout |
-
----
-
-# Twilio Provider
-
-```java
-TwilioProvider provider =
-        new TwilioProvider(
-                new TwilioConfiguration()
-        );
-```
-
-Simulated response:
+# Project Structure
 
 ```
-HTTP Status : 200
-Provider    : Twilio
-Result      : SUCCESS
+src
+├── main
+│   ├── java
+│   │   └── com.example.notifications
+│   │       ├── config
+│   │       ├── core
+│   │       │   ├── circuit
+│   │       │   ├── execution
+│   │       │   ├── retry
+│   │       │   └── sdk
+│   │       ├── event
+│   │       ├── exception
+│   │       ├── examples
+│   │       ├── factory
+│   │       ├── model
+│   │       ├── provider
+│   │       ├── sender
+│   │       ├── template
+│   │       └── validation
+│   └── resources
+│
+└── test
+    └── java
+        └── com.example.notifications
+            ├── event
+            ├── provider
+            ├── sender
+            ├── support
+            ├── template
+            └── validation
 ```
 
 ---
 
-# Push Notifications
+# Design Principles
 
-Push notifications do not currently require additional configuration.
+The library was designed following object-oriented design principles to maximize extensibility and maintainability.
 
-The default provider is Firebase.
+## SOLID
 
-```java
-PushProvider provider =
-        new FirebasePushProvider();
-```
+The implementation follows the SOLID principles.
 
-Simulated response:
+- Single Responsibility Principle
+- Open/Closed Principle
+- Liskov Substitution Principle
+- Interface Segregation Principle
+- Dependency Inversion Principle
 
-```
-HTTP Status : 200
-Provider    : Firebase
-Result      : SUCCESS
-```
+Examples include:
 
----
-
-# Retry Policies
-
-Notification SDK includes interchangeable retry strategies.
-
-## Fixed Retry
-
-Retries using a constant delay.
-
-```java
-RetryPolicy retryPolicy =
-        new FixedRetryPolicy(
-                3,
-                1000
-        );
-```
-
-Meaning:
-
-- maximum attempts: 3
-- delay between attempts: 1 second
+- Provider abstraction through interfaces
+- Independent notification channels
+- Registry-based validation
+- Pluggable retry strategies
+- Configurable providers
+- Builder-based configuration
 
 ---
 
-## Exponential Backoff
+## Open for Extension
 
-Delay increases after every retry.
+New functionality can be added without modifying existing components.
 
-```java
-RetryPolicy retryPolicy =
-        new ExponentialBackoffRetryPolicy(3);
-```
+Typical extension points include:
 
-Typical delays:
-
-| Attempt | Delay |
-|---------|-------|
-| 1 | 500 ms |
-| 2 | 1000 ms |
-| 3 | 2000 ms |
+- Email providers
+- SMS providers
+- Push providers
+- Retry policies
+- Event listeners
+- Notification templates
+- Validators
 
 ---
 
-# Circuit Breaker
+## Framework Independence
 
-The Circuit Breaker prevents repeated calls to failing providers.
+The library has no dependency on Spring Boot or any other application framework.
 
-```java
-CircuitBreaker breaker =
-        new CircuitBreaker(
-                3,
-                5000
-        );
-```
+Configuration is performed exclusively through Java objects and builders.
 
-Configuration:
+This allows the library to be integrated into:
 
-| Parameter | Description |
-|-----------|-------------|
-| failureThreshold | Failed operations before opening |
-| resetTimeoutMillis | Time before entering HALF_OPEN |
-
-Lifecycle:
-
-```
-CLOSED
-   │
-   ▼
-Failures
-   │
-   ▼
-OPEN
-   │
-(wait timeout)
-   │
-   ▼
-HALF_OPEN
-   │
-   ├── Success → CLOSED
-   └── Failure → OPEN
-```
+- Plain Java applications
+- Spring applications
+- Jakarta EE
+- Micronaut
+- Quarkus
+- Desktop applications
+- Command-line applications
 
 ---
 
-# EventBus
-
-Applications may subscribe to notification events.
-
-```java
-EventBus eventBus = new EventBus();
-
-eventBus.register(
-        new LoggingEventListener());
-
-eventBus.register(
-        new MetricsEventListener());
-```
-
-Current events:
-
-| Event | Description |
-|-------|-------------|
-| SENT | Notification delivered |
-| FAILED | Notification failed |
-| CIRCUIT_OPENED | Circuit entered OPEN state |
-| CIRCUIT_CLOSED | Circuit returned to CLOSED |
-
----
-
-# Logging
-
-Notification SDK uses SLF4J.
-
-Typical provider log:
-
-```
-INFO
-Simulating SendGrid email delivery to john@example.com
-```
-
-Applications are free to plug any SLF4J implementation:
-
-- Logback
-- Log4J2
-- JUL bridge
-- SimpleLogger
-
----
-
-# Configuration Best Practices
-
-✔ Build configuration once.
-
-✔ Reuse provider instances.
-
-✔ Keep API keys outside source code.
-
-✔ Prefer immutable configuration.
-
-✔ Share a single EventBus across the application.
-
-✔ Reuse NotificationSDK instead of recreating it.
-
----
-
-# Configuration Object Relationships
-
-```
-Application
-      │
-      ▼
-NotificationSDK.Builder
-      │
-      ├───────────────┐
-      ▼               ▼
-EmailConfiguration   SmsConfiguration
-      │               │
-      ▼               ▼
-EmailProvider      SmsProvider
-      │               │
-      ▼               ▼
-SendGrid        Twilio
-Mailgun
-```
 # Extending the Library
 
-One of the main design goals of Notification SDK is extensibility.
+Adding support for a new provider only requires implementing the corresponding provider interface.
 
-Applications should be able to introduce new providers or even entirely new notification channels without modifying the existing execution pipeline.
-
-The core architecture follows the **Open/Closed Principle (OCP)**.
-
-> Open for extension.
->
-> Closed for modification.
-
----
-
-# Extension Points
-
-The library exposes several extension points.
-
-| Extension | Required Changes | Existing Core Modified |
-|-----------|------------------|------------------------|
-| New Email Provider | Provider implementation | ❌ No |
-| New SMS Provider | Provider implementation | ❌ No |
-| New Push Provider | Provider implementation | ❌ No |
-| New Notification Channel | New classes + registration | ❌ No changes to execution pipeline |
-| New Retry Policy | Implement RetryPolicy | ❌ No |
-| New Validator | Implement Validator | ❌ No |
-| New Event Listener | Implement NotificationEventListener | ❌ No |
-
----
-
-# Adding a New Email Provider
-
-Suppose we want to support Amazon SES.
-
-The existing pipeline remains untouched.
-
-Only a new provider implementation is required.
-
-```
-AmazonSesProvider
-        │
-        ▼
-implements EmailProvider
-```
+Example
 
 ```java
-public final class AmazonSesProvider
+public final class CustomEmailProvider
         implements EmailProvider {
 
     @Override
     public NotificationResult send(
             EmailNotification notification) {
 
-        // Simulated implementation
+        // provider implementation
 
     }
 
     @Override
     public String getProviderName() {
 
-        return "Amazon SES";
+        return "Custom Provider";
 
     }
 
 }
 ```
 
-No other class requires modification.
-
-Applications simply change the configuration.
+After implementing the provider, simply register it in the corresponding configuration.
 
 ```java
 EmailConfiguration configuration =
         EmailConfiguration.builder()
                 .provider(
-                        new AmazonSesProvider(...)
-                )
+                        new CustomEmailProvider())
                 .build();
 ```
 
----
-
-# Adding a New SMS Provider
-
-Supporting a different SMS gateway follows exactly the same approach.
-
-```
-VonageProvider
-
-implements SmsProvider
-```
-
-```java
-SmsConfiguration configuration =
-        SmsConfiguration.builder()
-                .provider(
-                        new VonageProvider(...)
-                )
-                .build();
-```
-
-No business logic changes.
-
-No pipeline changes.
-
-No client code changes.
+No modifications to the notification pipeline are required.
 
 ---
 
-# Adding a New Push Provider
+# Error Handling
 
-Push notifications are also provider independent.
+The library distinguishes between configuration, validation and provider failures.
 
-```
-OneSignalProvider
+Main exception types include:
 
-implements PushProvider
-```
+| Exception | Description |
+|-----------|-------------|
+| ConfigurationException | Invalid library configuration |
+| ValidationException | Invalid notification data |
+| ProviderException | Provider execution failures |
+| CircuitBreakerOpenException | Circuit breaker rejected the request |
 
-Configuration changes only.
-
----
-
-# Adding a New Retry Strategy
-
-Retry behavior is completely decoupled from notification delivery.
-
-Applications may provide any retry algorithm.
-
-```java
-public final class LinearRetryPolicy
-        implements RetryPolicy {
-
-    @Override
-    public boolean shouldRetry(
-            int attempt,
-            Exception exception) {
-
-        return attempt < 5;
-
-    }
-
-    @Override
-    public long getDelayMillis(
-            int attempt) {
-
-        return 1000L;
-
-    }
-
-}
-```
-
-Use it:
-
-```java
-RetryPolicy retryPolicy =
-        new LinearRetryPolicy();
-```
-
-No other component changes.
+Provider operations always return a `NotificationResult`, allowing applications to inspect failures without relying exclusively on exceptions.
 
 ---
 
-# Adding a New Event Listener
+# Thread Safety
 
-The EventBus follows the Publish/Subscribe pattern.
+Notification processing is designed to support concurrent execution.
 
-Applications simply implement:
+Features include:
 
-```java
-NotificationEventListener
-```
+- Virtual Threads (Java 21)
+- CompletableFuture support
+- Independent Circuit Breakers
+- Thread-safe Event Bus
+- Immutable notification models
 
-Example:
-
-```java
-public final class AuditListener
-        implements NotificationEventListener {
-
-    @Override
-    public void onEvent(
-            NotificationEvent event) {
-
-        System.out.println(
-                event.getType());
-
-    }
-
-}
-```
-
-Registration:
-
-```java
-eventBus.register(
-        new AuditListener());
-```
-
-No changes to EventBus.
+These characteristics allow the library to be safely used in multi-threaded environments.
 
 ---
 
-# Adding a New Validator
+# Examples
 
-Validation is isolated from notification delivery.
+The project includes several executable examples demonstrating the main features of the library.
 
-Example:
+| Example | Description |
+|----------|-------------|
+| DemoRunner | Runs all examples from a single entry point |
+| UnifiedExample | Complete SDK configuration using Email, SMS and Push |
+| AsyncExample | Asynchronous notification delivery |
+| BatchExample | Sending multiple notifications in a single operation |
+| EventBusExample | Event publishing and subscription |
+| TemplateExample | Template rendering with placeholders |
+| RetryExample | Retry policy configuration |
+| CircuitBreakerExample | Circuit Breaker behavior |
+| PushExample | Push notification using Firebase and OneSignal |
 
-```java
-public final class CustomEmailValidator
-        implements Validator<EmailNotification> {
+All examples are located under
 
-    @Override
-    public void validate(
-            EmailNotification notification) {
-
-        // custom validation
-
-    }
-
-}
+```
+src/main/java/com/example/notifications/examples
 ```
 
-The sender can then use the new validator without affecting the rest of the system.
+and can be executed independently.
 
 ---
 
-# Adding a New Notification Channel
+# Testing
 
-The architecture also supports adding completely new notification channels.
+The project contains a comprehensive suite of unit tests covering the most important components of the library.
 
-For example:
+Covered areas include:
 
+- Email notifications
+- SMS notifications
+- Push notifications
+- Notification routing
+- SDK integration
+- Factory creation
+- Retry policies
+- Circuit Breaker
+- Validation
+- Event Bus
+- Template rendering
+- Metrics
+- Asynchronous execution
+- Batch processing
+- Provider failures
+
+Execute all tests
+
+```bash
+mvn test
 ```
-Slack
-Discord
-Microsoft Teams
-WhatsApp
-Telegram
-```
-
-A new channel requires the following components.
-
-```
-SlackNotification
-
-SlackProvider
-
-SlackConfiguration
-
-SlackValidator
-
-SlackSender
-
-SlackChannelHandler
-```
-
-After creating these classes, the new handler is registered inside the factory.
-
-```
-NotificationFactory
-
-↓
-
-handlers.add(
-    new SlackChannelHandler(...)
-)
-```
-
-The following classes remain unchanged:
-
-- NotificationManager
-
-- ExecutionPipeline
-
-- RetryExecutor
-
-- ValidationExecutor
-
-- ChannelResolver
-
-- EventBus
-
-This demonstrates compliance with the Open/Closed Principle.
 
 ---
 
-# Why Channel Handlers?
+# Future Improvements
 
-Instead of using:
+Possible future enhancements include:
 
-```
-if (notification instanceof EmailNotification)
-
-if (notification instanceof SmsNotification)
-
-if (notification instanceof PushNotification)
-```
-
-the library delegates routing to specialized handlers.
-
-```
-Notification
-
-↓
-
-ChannelResolver
-
-↓
-
-ChannelHandler
-
-↓
-
-Sender
-
-↓
-
-Provider
-```
-
-Advantages:
-
-- No instanceof chains
-
-- Better separation of concerns
-
-- Easier testing
-
-- Easier extension
+- Additional provider implementations (Email, SMS and Push)
+- Scheduled notifications
+- Rate limiting
+- Message persistence
+- Delivery queue support
+- Distributed Event Bus implementations
+- Metrics integration with Micrometer
+- Observability through OpenTelemetry
+- Native Image support (GraalVM)
+- Provider health monitoring
+- Webhook callbacks for delivery status
+- Notification scheduling and expiration
 
 ---
 
-# Dependency Inversion
+# Contributing
 
-High-level components never depend on concrete providers.
+Contributions are welcome.
 
-```
-NotificationManager
+If you would like to improve the project:
 
-↓
+1. Fork the repository.
+2. Create a feature branch.
+3. Commit your changes.
+4. Submit a Pull Request.
 
-ChannelHandler
+Please ensure that:
 
-↓
-
-Sender
-
-↓
-
-EmailProvider
-```
-
-Instead of
-
-```
-NotificationManager
-
-↓
-
-SendGridProvider
-```
-
-Applications choose providers through configuration.
-
-This allows replacing providers without recompiling business logic.
+- Existing tests continue to pass.
+- New functionality includes unit tests.
+- Public APIs remain backward compatible whenever possible.
 
 ---
 
-# Composition Over Inheritance
+# Design Goals
 
-Most components collaborate through composition.
+The main objectives of this project are:
 
-```
-NotificationManager
-
-contains
-
-ExecutionPipeline
-
-contains
-
-RetryExecutor
-
-contains
-
-RetryPolicy
-```
-
-This keeps responsibilities isolated and improves testability.
-
----
-
-# Framework Independence
-
-The library contains no dependency on:
-
-- Spring Framework
-- Spring Boot
-- Quarkus
-- Micronaut
-- CDI
-- Jakarta Injection
-
-Applications remain free to integrate the SDK using any dependency injection mechanism.
-
----
-
-# Architectural Benefits
-
-The resulting architecture provides:
-
-- Provider independence
+- Simplicity
+- Extensibility
 - Framework independence
-- Strong separation of concerns
-- Easy testing
-- Reusable components
-- High cohesion
-- Low coupling
-- SOLID compliance
-- Easy maintenance
-- Future extensibility
+- Clean architecture
+- SOLID design
+- Provider abstraction
+- Ease of integration
+
+The library aims to provide a consistent developer experience regardless of the notification channel or provider being used.
 
 ---
 
-# Extension Summary
+# License
 
-| Customization | Supported |
-|--------------|-----------|
-| New Email Provider | ✅ |
-| New SMS Provider | ✅ |
-| New Push Provider | ✅ |
-| New Retry Policy | ✅ |
-| New Validator | ✅ |
-| New Event Listener | ✅ |
-| New Notification Channel | ✅ |
-| Framework Integration | ✅ |
+This project is released under the MIT License.
+
+---
+
+# Author
+
+Developed by Brian Bayro
+
+GitHub Repository
+
+https://github.com/bbayroc/challenge
+
+---
+
+# Final Notes
+
+Notifications Library demonstrates how a framework-independent Java library can provide a clean, extensible and production-ready architecture for multi-channel notifications.
+
+The project combines:
+
+- Builder-based configuration
+- Provider abstraction
+- Registry-driven validation
+- Retry strategies
+- Independent Circuit Breakers
+- Template rendering
+- Event publishing
+- Asynchronous execution
+- Batch processing
+
+while maintaining a unified API for Email, SMS and Push notifications.

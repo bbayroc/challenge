@@ -1,10 +1,11 @@
 package com.example.notifications.provider.push;
 
-import com.example.notifications.model.NotificationStatus;
-import com.example.notifications.model.push.PushNotification;
+import com.example.notifications.model.NotificationResult;
+import com.example.notifications.support.TestAssertions;
+import com.example.notifications.support.TestNotificationFactory;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class OneSignalProviderTest {
 
@@ -14,34 +15,17 @@ class OneSignalProviderTest {
         OneSignalPushProvider provider =
                 new OneSignalPushProvider();
 
-        PushNotification notification =
-                PushNotification.builder()
-                        .deviceToken("device-1")
-                        .title("Hello")
-                        .message("Testing OneSignal")
-                        .build();
+        NotificationResult result =
+                provider.send(
+                        TestNotificationFactory.push());
 
-        var result =
-                provider.send(notification);
+        TestAssertions.assertSuccessful(
+                result,
+                "OneSignal");
 
-        assertAll(
-
-                () -> assertEquals(
-                        NotificationStatus.SUCCESS,
-                        result.getStatus()),
-
-                () -> assertEquals(
-                        "OneSignal",
-                        result.getProvider()),
-
-                () -> assertNotNull(
-                        result.getMessageId()),
-
-                () -> assertEquals(
-                        200,
-                        result.getStatusCode())
-
-        );
+        assertEquals(
+                200,
+                result.getStatusCode());
 
     }
 

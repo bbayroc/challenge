@@ -1,17 +1,13 @@
 package com.example.notifications;
 
-import com.example.notifications.config.email.*;
-import com.example.notifications.config.sms.*;
 import com.example.notifications.core.NotificationManager;
-import com.example.notifications.core.circuit.CircuitBreaker;
-import com.example.notifications.core.retry.ExponentialBackoffRetryPolicy;
-import com.example.notifications.event.EventBus;
-import com.example.notifications.factory.NotificationFactory;
+import com.example.notifications.exception.CircuitBreakerOpenException;
 import com.example.notifications.model.NotificationResult;
 import com.example.notifications.model.email.EmailNotification;
-import com.example.notifications.provider.FailingEmailProvider;
-import com.example.notifications.provider.sms.TwilioProvider;
-import com.example.notifications.exception.CircuitBreakerOpenException;
+import com.example.notifications.support.TestAssertions;
+import com.example.notifications.support.TestConstants;
+import com.example.notifications.support.TestManagerFactory;
+import com.example.notifications.support.TestNotificationFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,55 +17,44 @@ class CircuitBreakerTest {
     @Test
     void shouldOpenCircuitAfterFailures() {
 
-        EmailConfiguration emailConfig =
-                EmailConfiguration.builder()
-                        .provider(new FailingEmailProvider())
-                        .defaultFrom("test@test.com")
-                        .build();
+        try (NotificationManager manager =
+                     TestManagerFactory.createWithFailingEmailProvider()) {
 
-        SmsConfiguration smsConfig =
-                SmsConfiguration.builder()
-                        .provider(new TwilioProvider(new TwilioConfiguration()))
-                        .build();
+            EmailNotification email =
+                    TestNotificationFactory.failingEmail();
 
-        EventBus eventBus = new EventBus();
+            NotificationResult r1 =
+                    manager.send(email);
 
-        NotificationManager manager =
-                NotificationFactory.createManager(
-                        emailConfig,
-                        smsConfig,
-                        new ExponentialBackoffRetryPolicy(3),
-                        new CircuitBreaker(3, 5000),
-                        eventBus
-                );
+            TestAssertions.assertFailed(
+                    r1,
+                    TestConstants.FAILING_PROVIDER);
 
-        EmailNotification email =
-                EmailNotification.builder()
-                        .recipient("test@test.com")
-                        .subject("fail")
-                        .message("fail")
-                        .build();
+            NotificationResult r2 =
+                    manager.send(email);
 
-// First failure
-        NotificationResult r1 = manager.send(email);
-        assertEquals("FAILED", r1.getStatus().name());
+            TestAssertions.assertFailed(
+                    r2,
+                    TestConstants.FAILING_PROVIDER);
 
-// Second failure
-        NotificationResult r2 = manager.send(email);
-        assertEquals("FAILED", r2.getStatus().name());
+            NotificationResult r3 =
+                    manager.send(email);
 
-// Third failure (this opens the circuit)
-        NotificationResult r3 = manager.send(email);
-        assertEquals("FAILED", r3.getStatus().name());
+            TestAssertions.assertFailed(
+                    r3,
+                    TestConstants.FAILING_PROVIDER);
 
-// Fourth request must be rejected
-        CircuitBreakerOpenException ex =
-                assertThrows(
-                        CircuitBreakerOpenException.class,
-                        () -> manager.send(email)
-                );
+            CircuitBreakerOpenException ex =
+                    assertThrows(
+                            CircuitBreakerOpenException.class,
+                            () -> manager.send(email));
 
-        assertEquals("Circuit is OPEN", ex.getMessage());
+            assertEquals(
+                    "Circuit is OPEN",
+                    ex.getMessage());
+
+        }
+
     }
 
 }
