@@ -51,7 +51,7 @@ G --> H[Event Bus]
 ## Features
 
 - Java 21+
-- Framework agnostic (no Spring Boot required)
+- Framework-agnostic (no Spring Boot required)
 - Maven project
 - Unified notification API
 - Builder-based configuration
@@ -211,11 +211,11 @@ Applications may provide custom implementations.
 
 ## Supported Channels
 
-| Channel | Providers |
-|----------|-----------|
-| Email | SendGrid, Mailgun |
-| SMS | Twilio |
-| Push | Firebase, OneSignal |
+| Channel | Providers           |
+|---------|---------------------|
+| Email   | SendGrid, Mailgun   |
+| SMS     | Twilio              |
+| Push    | Firebase, OneSignal |
 
 ---
 
@@ -481,10 +481,10 @@ CircuitBreaker breaker =
 
 Configuration parameters
 
-| Property | Description |
-|----------|-------------|
+| Property         | Description                                               |
+|------------------|-----------------------------------------------------------|
 | failureThreshold | Number of consecutive failures before opening the circuit |
-| resetTimeout | Time in milliseconds before allowing another request |
+| resetTimeout     | Time in milliseconds before allowing another request      |
 
 ---
 
@@ -507,13 +507,13 @@ NotificationManager manager =
 
 # Supported Providers
 
-| Channel | Provider | Status |
-|----------|----------|--------|
-| Email | SendGrid | Supported |
-| Email | Mailgun | Supported |
-| SMS | Twilio | Supported |
-| Push | Firebase | Supported |
-| Push | OneSignal | Supported |
+| Channel | Provider  | Status    |
+|---------|-----------|-----------|
+| Email   | SendGrid  | Supported |
+| Email   | Mailgun   | Supported |
+| SMS     | Twilio    | Supported |
+| Push    | Firebase  | Supported |
+| Push    | OneSignal | Supported |
 
 The provider architecture is extensible.
 
@@ -912,11 +912,11 @@ The library distinguishes between configuration, validation and provider failure
 
 Main exception types include:
 
-| Exception | Description |
-|-----------|-------------|
-| ConfigurationException | Invalid library configuration |
-| ValidationException | Invalid notification data |
-| ProviderException | Provider execution failures |
+| Exception                   | Description                          |
+|-----------------------------|--------------------------------------|
+| ConfigurationException      | Invalid library configuration        |
+| ValidationException         | Invalid notification data            |
+| ProviderException           | Provider execution failures          |
 | CircuitBreakerOpenException | Circuit breaker rejected the request |
 
 Provider operations always return a `NotificationResult`, allowing applications to inspect failures without relying exclusively on exceptions.
@@ -935,7 +935,7 @@ Features include:
 - Thread-safe Event Bus
 - Immutable notification models
 
-These characteristics allow the library to be safely used in multi-threaded environments.
+These characteristics allow the library to be safely used in multithreaded environments.
 
 ---
 
@@ -960,17 +960,17 @@ The examples in this repository intentionally use placeholder values such as `YO
 
 The project includes several executable examples demonstrating the main features of the library.
 
-| Example | Description |
-|----------|-------------|
-| DemoRunner | Runs all examples from a single entry point |
-| UnifiedExample | Complete SDK configuration using Email, SMS and Push |
-| AsyncExample | Asynchronous notification delivery |
-| BatchExample | Sending multiple notifications in a single operation |
-| EventBusExample | Event publishing and subscription |
-| TemplateExample | Template rendering with placeholders |
-| RetryExample | Retry policy configuration |
-| CircuitBreakerExample | Circuit Breaker behavior |
-| PushExample | Push notification using Firebase and OneSignal |
+| Example               | Description                                          |
+|-----------------------|------------------------------------------------------|
+| DemoRunner            | Runs all examples from a single entry point          |
+| UnifiedExample        | Complete SDK configuration using Email, SMS and Push |
+| AsyncExample          | Asynchronous notification delivery                   |
+| BatchExample          | Sending multiple notifications in a single operation |
+| EventBusExample       | Event publishing and subscription                    |
+| TemplateExample       | Template rendering with placeholders                 |
+| RetryExample          | Retry policy configuration                           |
+| CircuitBreakerExample | Circuit Breaker behavior                             |
+| PushExample           | Push notification using Firebase and OneSignal       |
 
 All examples are located under
 
@@ -1084,7 +1084,7 @@ https://github.com/bbayroc/challenge
 
 # Final Notes
 
-Notifications Library demonstrates how a framework-independent Java library can provide a clean, extensible and production-ready architecture for multi-channel notifications.
+Notifications Library demonstrates how a framework-independent Java library can provide a clean, extensible and production-ready architecture for multichannel notifications.
 
 The project combines:
 
