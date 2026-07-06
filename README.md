@@ -125,11 +125,87 @@ java -jar target/notifications-lib-1.0.0.jar
 ```
 ---
 
+## Maven
+
+The library is not currently published to Maven Central.
+
+Clone the repository and build it locally.
+
+```bash
+git clone https://github.com/bbayroc/challenge.git
+
+cd challenge
+
+mvn clean install
+```
+
+---
+
+## Gradle
+
+After installing the library locally, it can be referenced from the local Maven repository.
+
+---
+
 # Quick Start
 
 The library can be used either through the high-level `NotificationSDK` or by creating a `NotificationManager` directly.
 
 The SDK is the recommended entry point for most applications.
+
+---
+
+## NotificationManager
+
+Lower-level API offering full control over handlers and execution.
+
+Main methods
+
+```java
+send(Notification)
+
+sendAsync(Notification)
+
+sendBatch(List<Notification>)
+
+sendBatchAsync(List<Notification>)
+```
+
+---
+
+## NotificationResult
+
+Represents the outcome of a notification.
+
+Main getters
+
+- getStatus()
+- getProvider()
+- getMessageId()
+- getTimestamp()
+- getStatusCode()
+- getErrorMessage()
+
+---
+
+## Notification Builders
+
+Supported builders include
+
+- EmailNotification.builder()
+- SmsNotification.builder()
+- PushNotification.builder()
+
+---
+
+## RetryPolicy
+
+Implemented by
+
+- FixedRetryPolicy
+- ExponentialBackoffRetryPolicy
+
+Applications may provide custom implementations.
 
 ---
 
@@ -140,6 +216,20 @@ The SDK is the recommended entry point for most applications.
 | Email | SendGrid, Mailgun |
 | SMS | Twilio |
 | Push | Firebase, OneSignal |
+
+---
+
+# API Reference
+
+## NotificationSDK
+
+High-level entry point for most applications.
+
+Main methods:
+
+```java
+NotificationResult send(Notification notification)
+```
 
 ---
 
@@ -846,6 +936,23 @@ Features include:
 - Immutable notification models
 
 These characteristics allow the library to be safely used in multi-threaded environments.
+
+---
+
+# Security
+
+This library never stores credentials internally.
+
+Provider credentials should be supplied by the application using secure mechanisms such as:
+
+- Environment variables
+- Secret managers
+- Vault solutions
+- CI/CD secret storage
+
+Avoid hardcoding production credentials in source code.
+
+The examples in this repository intentionally use placeholder values such as `YOUR_API_KEY` and `demo-project`.
 
 ---
 
