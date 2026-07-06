@@ -3,21 +3,21 @@ package com.example.notifications.validation;
 import com.example.notifications.core.validation.NotificationValidator;
 import com.example.notifications.exception.ValidationException;
 import com.example.notifications.model.NotificationChannel;
-import com.example.notifications.model.email.EmailNotification;
+import com.example.notifications.model.push.PushNotification;
 
-public final class EmailValidator
-        implements NotificationValidator<EmailNotification> {
+public final class PushValidator
+        implements NotificationValidator<PushNotification> {
 
     @Override
     public NotificationChannel supports() {
 
-        return NotificationChannel.EMAIL;
+        return NotificationChannel.PUSH;
 
     }
 
     @Override
     public void validate(
-            EmailNotification notification) {
+            PushNotification notification) {
 
         if (notification == null) {
 
@@ -27,20 +27,12 @@ public final class EmailValidator
         }
 
         ValidationSupport.notBlank(
-                notification.getRecipient(),
-                "Recipient");
+                notification.getDeviceToken(),
+                "Device token");
 
         ValidationSupport.notBlank(
-                notification.getSubject(),
-                "Subject");
-
-        if (!notification.getRecipient().matches(
-                "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-
-            throw new ValidationException(
-                    "Invalid email address");
-
-        }
+                notification.getTitle(),
+                "Title");
 
         if (notification.getTemplate() == null) {
 
@@ -51,4 +43,5 @@ public final class EmailValidator
         }
 
     }
+
 }

@@ -1,16 +1,5 @@
-# Maven
-target/
-
-# IntelliJ
-.idea/
+.git
+.idea
+target
 *.iml
-
-# Logs
-*.log
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Java
-*.class
+README.md

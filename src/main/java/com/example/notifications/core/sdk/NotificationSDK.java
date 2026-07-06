@@ -17,6 +17,11 @@ import com.example.notifications.sender.EmailSender;
 import com.example.notifications.sender.SmsSender;
 import com.example.notifications.validation.EmailValidator;
 import com.example.notifications.validation.SmsValidator;
+import com.example.notifications.config.push.PushConfiguration;
+import com.example.notifications.sender.PushSender;
+import com.example.notifications.validation.PushValidator;
+import com.example.notifications.exception.ConfigurationException;
+import com.example.notifications.config.push.FirebaseConfiguration;
 
 public final class NotificationSDK
         implements AutoCloseable {
@@ -35,8 +40,20 @@ public final class NotificationSDK
                         builder.smsConfig,
                         new SmsValidator());
 
-        PushProvider pushProvider =
-                new FirebasePushProvider();
+        PushConfiguration pushConfiguration =
+                PushConfiguration.builder()
+                        .provider(
+                                new FirebasePushProvider(
+                                        FirebaseConfiguration.builder()
+                                                .projectId("demo")
+                                                .credentials("demo")
+                                                .build()))
+                        .build();
+
+        PushSender pushSender =
+                new PushSender(
+                        pushConfiguration,
+                        new PushValidator());
 
         this.manager =
                 NotificationManager.builder()
@@ -48,7 +65,7 @@ public final class NotificationSDK
                                         smsSender))
                         .handler(
                                 new PushChannelHandler(
-                                        pushProvider))
+                                        pushSender))
                         .retryPolicy(
                                 builder.retryPolicy)
                         .circuitBreaker(
@@ -144,22 +161,22 @@ public final class NotificationSDK
         public NotificationSDK build() {
 
             if (emailConfig == null) {
-                throw new IllegalStateException(
+                throw new ConfigurationException(
                         "Email configuration is required");
             }
 
             if (smsConfig == null) {
-                throw new IllegalStateException(
+                throw new ConfigurationException(
                         "SMS configuration is required");
             }
 
             if (retryPolicy == null) {
-                throw new IllegalStateException(
+                throw new ConfigurationException(
                         "RetryPolicy is required");
             }
 
             if (circuitBreaker == null) {
-                throw new IllegalStateException(
+                throw new ConfigurationException(
                         "CircuitBreaker is required");
             }
 

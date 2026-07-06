@@ -1,12 +1,15 @@
 package com.example.notifications.core.execution;
 
 import com.example.notifications.core.ChannelResolver;
+import com.example.notifications.core.circuit.CircuitBreaker;
+import com.example.notifications.exception.CircuitBreakerOpenException;
 import com.example.notifications.event.EventBus;
 import com.example.notifications.event.NotificationEvent;
 import com.example.notifications.event.NotificationEventType;
 import com.example.notifications.model.Notification;
 import com.example.notifications.model.NotificationResult;
 import com.example.notifications.model.NotificationStatus;
+import com.example.notifications.validation.ValidationRegistry;
 
 import java.time.Instant;
 
@@ -18,28 +21,35 @@ public final class ExecutionPipeline {
 
     private final EventBus eventBus;
 
-    private final ValidationExecutor validationExecutor =
-            new ValidationExecutor();
+    private final ValidationRegistry validationRegistry;
 
     public ExecutionPipeline(
             ChannelResolver resolver,
             ExecutionContext context,
-            EventBus eventBus) {
+            EventBus eventBus,
+            ValidationRegistry validationRegistry) {
 
         this.resolver = resolver;
         this.context = context;
         this.eventBus = eventBus;
+        this.validationRegistry = validationRegistry;
 
     }
 
     public NotificationResult execute(
             Notification notification) {
 
-        validationExecutor.validate(notification);
+        validationRegistry.validate(notification);
 
-        if (!context.getCircuitBreaker().allowRequest()) {
-            throw new IllegalStateException(
+        CircuitBreaker breaker =
+                context.getCircuitBreakerRegistry()
+                        .get(notification.getChannel());
+
+        if (!breaker.allowRequest()) {
+
+            throw new CircuitBreakerOpenException(
                     "Circuit is OPEN");
+
         }
 
         RetryExecutor retryExecutor =
@@ -52,8 +62,7 @@ public final class ExecutionPipeline {
 
         if (result.getStatus() == NotificationStatus.FAILED) {
 
-            context.getCircuitBreaker()
-                    .recordFailure();
+            breaker.recordFailure();
 
             eventBus.publish(
                     new NotificationEvent(
@@ -63,8 +72,7 @@ public final class ExecutionPipeline {
 
         } else {
 
-            context.getCircuitBreaker()
-                    .recordSuccess();
+            breaker.recordSuccess();
 
             eventBus.publish(
                     new NotificationEvent(

@@ -1,6 +1,7 @@
 package com.example.notifications.config.email;
 
 import com.example.notifications.config.NotificationContext;
+import com.example.notifications.exception.ConfigurationException;
 import com.example.notifications.provider.email.EmailProvider;
 
 import java.time.Duration;
@@ -84,12 +85,12 @@ public final class EmailConfiguration {
         public EmailConfiguration build() {
 
             if (provider == null) {
-                throw new IllegalStateException(
+                throw new ConfigurationException(
                         "Email provider is required");
             }
 
             if (timeout == null) {
-                throw new IllegalStateException(
+                throw new ConfigurationException(
                         "Email timeout is required");
             }
 

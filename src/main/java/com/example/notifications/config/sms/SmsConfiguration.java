@@ -1,6 +1,7 @@
 package com.example.notifications.config.sms;
 
 import com.example.notifications.config.NotificationContext;
+import com.example.notifications.exception.ConfigurationException;
 import com.example.notifications.provider.sms.SmsProvider;
 
 import java.time.Duration;
@@ -63,12 +64,12 @@ public final class SmsConfiguration {
         public SmsConfiguration build() {
 
             if (provider == null) {
-                throw new IllegalStateException(
+                throw new ConfigurationException(
                         "SMS provider is required");
             }
 
             if (timeout == null) {
-                throw new IllegalStateException(
+                throw new ConfigurationException(
                         "SMS timeout is required");
             }
 

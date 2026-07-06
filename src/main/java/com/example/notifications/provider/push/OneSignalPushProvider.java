@@ -1,6 +1,5 @@
 package com.example.notifications.provider.push;
 
-import com.example.notifications.config.push.FirebaseConfiguration;
 import com.example.notifications.model.NotificationResult;
 import com.example.notifications.model.NotificationStatus;
 import com.example.notifications.model.push.PushNotification;
@@ -11,21 +10,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
-public final class FirebasePushProvider
+public final class OneSignalPushProvider
         implements PushProvider {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(
-                    FirebasePushProvider.class);
-
-    private final FirebaseConfiguration configuration;
-
-    public FirebasePushProvider(
-            FirebaseConfiguration configuration) {
-
-        this.configuration = configuration;
-
-    }
+                    OneSignalPushProvider.class);
 
     @Override
     public NotificationResult send(
@@ -33,14 +23,12 @@ public final class FirebasePushProvider
 
         LOGGER.info(
                 """
-                Simulating Firebase push delivery
+                Simulating OneSignal push delivery
 
-                Project : {}
-                Device  : {}
-                Title   : {}
-                Message : {}
+                Device : {}
+                Title  : {}
+                Message: {}
                 """,
-                configuration.getProjectId(),
                 notification.getDeviceToken(),
                 notification.getTitle(),
                 notification.getMessage());
@@ -51,7 +39,7 @@ public final class FirebasePushProvider
                 UUID.randomUUID().toString(),
                 null,
                 200,
-                Duration.ofMillis(80),
+                Duration.ofMillis(75),
                 Instant.now());
 
     }
@@ -59,7 +47,7 @@ public final class FirebasePushProvider
     @Override
     public String getProviderName() {
 
-        return "Firebase";
+        return "OneSignal";
 
     }
 

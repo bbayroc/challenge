@@ -18,7 +18,6 @@ public final class CircuitBreaker {
             long resetTimeoutMillis) {
 
         this.failureThreshold = failureThreshold;
-
         this.resetTimeoutMillis = resetTimeoutMillis;
 
     }
@@ -31,7 +30,6 @@ public final class CircuitBreaker {
                     > resetTimeoutMillis) {
 
                 state = CircuitState.HALF_OPEN;
-
                 return true;
 
             }
@@ -47,7 +45,6 @@ public final class CircuitBreaker {
     public synchronized void recordSuccess() {
 
         failureCount = 0;
-
         state = CircuitState.CLOSED;
 
     }
@@ -63,6 +60,26 @@ public final class CircuitBreaker {
             state = CircuitState.OPEN;
 
         }
+
+    }
+
+    public int getFailureThreshold() {
+
+        return failureThreshold;
+
+    }
+
+    public long getResetTimeout() {
+
+        return resetTimeoutMillis;
+
+    }
+
+    public CircuitBreaker copy() {
+
+        return new CircuitBreaker(
+                failureThreshold,
+                resetTimeoutMillis);
 
     }
 

@@ -11,6 +11,7 @@ import com.example.notifications.model.NotificationResult;
 import com.example.notifications.model.email.EmailNotification;
 import com.example.notifications.provider.FailingEmailProvider;
 import com.example.notifications.provider.sms.TwilioProvider;
+import com.example.notifications.exception.CircuitBreakerOpenException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,10 +63,11 @@ class CircuitBreakerTest {
         assertEquals("FAILED", r3.getStatus().name());
 
 // Fourth request must be rejected
-        IllegalStateException ex = assertThrows(
-                IllegalStateException.class,
-                () -> manager.send(email)
-        );
+        CircuitBreakerOpenException ex =
+                assertThrows(
+                        CircuitBreakerOpenException.class,
+                        () -> manager.send(email)
+                );
 
         assertEquals("Circuit is OPEN", ex.getMessage());
     }

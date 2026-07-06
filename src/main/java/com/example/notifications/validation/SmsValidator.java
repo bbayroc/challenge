@@ -1,14 +1,19 @@
 package com.example.notifications.validation;
 
-import com.example.notifications.api.Validator;
+import com.example.notifications.core.validation.NotificationValidator;
 import com.example.notifications.exception.ValidationException;
+import com.example.notifications.model.NotificationChannel;
 import com.example.notifications.model.sms.SmsNotification;
 
 public final class SmsValidator
-        implements Validator<SmsNotification> {
+        implements NotificationValidator<SmsNotification> {
 
-    private static final String PHONE_REGEX =
-            "^\\+[1-9]\\d{7,14}$";
+    @Override
+    public NotificationChannel supports() {
+
+        return NotificationChannel.SMS;
+
+    }
 
     @Override
     public void validate(
@@ -25,8 +30,8 @@ public final class SmsValidator
                 notification.getPhoneNumber(),
                 "Phone number");
 
-        if (!notification.getPhoneNumber()
-                .matches(PHONE_REGEX)) {
+        if (!notification.getPhoneNumber().matches(
+                "^\\+?[1-9]\\d{7,14}$")) {
 
             throw new ValidationException(
                     "Invalid phone number");

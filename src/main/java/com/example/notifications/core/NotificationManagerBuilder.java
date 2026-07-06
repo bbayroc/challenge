@@ -1,10 +1,12 @@
 package com.example.notifications.core;
 
 import com.example.notifications.core.circuit.CircuitBreaker;
+import com.example.notifications.core.circuit.CircuitBreakerRegistry;
 import com.example.notifications.core.execution.ExecutionContext;
 import com.example.notifications.core.retry.RetryPolicy;
 import com.example.notifications.event.EventBus;
-
+import com.example.notifications.model.NotificationChannel;
+import com.example.notifications.exception.ConfigurationException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -70,21 +72,21 @@ public final class NotificationManagerBuilder {
 
         if (handlers.isEmpty()) {
 
-            throw new IllegalStateException(
+            throw new ConfigurationException(
                     "At least one ChannelHandler is required");
 
         }
 
         if (retryPolicy == null) {
 
-            throw new IllegalStateException(
+            throw new ConfigurationException(
                     "RetryPolicy is required");
 
         }
 
         if (circuitBreaker == null) {
 
-            throw new IllegalStateException(
+            throw new ConfigurationException(
                     "CircuitBreaker is required");
 
         }
@@ -92,10 +94,25 @@ public final class NotificationManagerBuilder {
         ChannelResolver resolver =
                 new ChannelResolver(handlers);
 
+        CircuitBreakerRegistry registry =
+                new CircuitBreakerRegistry()
+
+                        .register(
+                                NotificationChannel.EMAIL,
+                                circuitBreaker.copy())
+
+                        .register(
+                                NotificationChannel.SMS,
+                                circuitBreaker.copy())
+
+                        .register(
+                                NotificationChannel.PUSH,
+                                circuitBreaker.copy());
+
         ExecutionContext executionContext =
                 new ExecutionContext(
                         retryPolicy,
-                        circuitBreaker);
+                        registry);
 
         return new NotificationManager(
                 resolver,

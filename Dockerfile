@@ -1,7 +1,27 @@
-FROM eclipse-temurin:21-jre-alpine
+# ===========================
+# Build Stage
+# ===========================
+
+FROM maven:3.9.9-eclipse-temurin-21 AS builder
+
+WORKDIR /build
+
+COPY pom.xml .
+
+COPY src ./src
+
+RUN mvn clean package -DskipTests
+
+# ===========================
+# Runtime Stage
+# ===========================
+
+FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-COPY target/notifications-lib-1.0.0.jar app.jar
+COPY --from=builder \
+/build/target/notifications-lib-1.0.0.jar \
+app.jar
 
 ENTRYPOINT ["java","-jar","app.jar"]

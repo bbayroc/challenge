@@ -1,21 +1,20 @@
 package com.example.notifications.core.execution;
 
-import com.example.notifications.core.circuit.CircuitBreaker;
+import com.example.notifications.core.circuit.CircuitBreakerRegistry;
 import com.example.notifications.core.retry.RetryPolicy;
 
 public final class ExecutionContext {
 
     private final RetryPolicy retryPolicy;
 
-    private final CircuitBreaker circuitBreaker;
+    private final CircuitBreakerRegistry circuitBreakerRegistry;
 
     public ExecutionContext(
             RetryPolicy retryPolicy,
-            CircuitBreaker circuitBreaker) {
+            CircuitBreakerRegistry circuitBreakerRegistry) {
 
         this.retryPolicy = retryPolicy;
-
-        this.circuitBreaker = circuitBreaker;
+        this.circuitBreakerRegistry = circuitBreakerRegistry;
 
     }
 
@@ -25,9 +24,9 @@ public final class ExecutionContext {
 
     }
 
-    public CircuitBreaker getCircuitBreaker() {
+    public CircuitBreakerRegistry getCircuitBreakerRegistry() {
 
-        return circuitBreaker;
+        return circuitBreakerRegistry;
 
     }
 

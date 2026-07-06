@@ -5,7 +5,10 @@ import com.example.notifications.core.execution.ExecutionPipeline;
 import com.example.notifications.event.EventBus;
 import com.example.notifications.model.Notification;
 import com.example.notifications.model.NotificationResult;
-
+import com.example.notifications.validation.EmailValidator;
+import com.example.notifications.validation.PushValidator;
+import com.example.notifications.validation.SmsValidator;
+import com.example.notifications.validation.ValidationRegistry;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -24,11 +27,18 @@ public final class NotificationManager
 
         this.eventBus = eventBus;
 
+        ValidationRegistry validationRegistry =
+                new ValidationRegistry()
+                        .register(new EmailValidator())
+                        .register(new SmsValidator())
+                        .register(new PushValidator());
+
         this.pipeline =
                 new ExecutionPipeline(
                         resolver,
                         executionContext,
-                        eventBus);
+                        eventBus,
+                        validationRegistry);
 
         this.executor =
                 Executors.newVirtualThreadPerTaskExecutor();

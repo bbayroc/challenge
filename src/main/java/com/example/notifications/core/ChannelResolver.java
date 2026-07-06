@@ -3,7 +3,7 @@ package com.example.notifications.core;
 import com.example.notifications.model.Notification;
 import com.example.notifications.model.NotificationChannel;
 import com.example.notifications.model.NotificationResult;
-
+import com.example.notifications.exception.UnsupportedChannelException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -32,9 +32,9 @@ public final class ChannelResolver {
                 registry.get(notification.getChannel());
 
         if (handler == null) {
-            throw new IllegalArgumentException(
-                    "No handler for channel: " +
-                            notification.getChannel());
+            throw new UnsupportedChannelException(
+                    "No handler registered for channel: "
+                            + notification.getChannel());
         }
 
         return (NotificationResult) handler.send(notification);

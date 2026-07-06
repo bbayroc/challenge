@@ -3,17 +3,17 @@ package com.example.notifications.core;
 import com.example.notifications.model.NotificationChannel;
 import com.example.notifications.model.NotificationResult;
 import com.example.notifications.model.push.PushNotification;
-import com.example.notifications.provider.push.PushProvider;
+import com.example.notifications.sender.PushSender;
 
 public final class PushChannelHandler
         implements ChannelHandler<PushNotification> {
 
-    private final PushProvider provider;
+    private final PushSender sender;
 
     public PushChannelHandler(
-            PushProvider provider) {
+            PushSender sender) {
 
-        this.provider = provider;
+        this.sender = sender;
 
     }
 
@@ -28,7 +28,7 @@ public final class PushChannelHandler
     public NotificationResult send(
             PushNotification notification) {
 
-        return provider.send(notification);
+        return sender.send(notification);
 
     }
 
